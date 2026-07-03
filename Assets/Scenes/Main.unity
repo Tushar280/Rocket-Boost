@@ -777,6 +777,14 @@ MonoBehaviour:
       m_Groups: 
       m_Action: Thrust
       m_Flags: 0
+    - m_Name: 
+      m_Id: 1eb57f43-3c77-4a48-94e9-5911fb07a62e
+      m_Path: <Gamepad>/rightTrigger
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Thrust
+      m_Flags: 0
     m_Flags: 0
 --- !u!4 &1905988270 stripped
 Transform:
