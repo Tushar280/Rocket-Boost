@@ -1,14 +1,14 @@
 fileFormatVersion: 2
 guid: 33bc3880cd97be34ab3c482af7bb304e
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Colour_Palette_Sci_Fi
-    second: {fileID: 2100000, guid: 1ad4e47271285f4498c0af5fdac4e638, type: 2}
+    second: {fileID: 7515526912956163633, guid: ad39e1743733cb048b438c089ba4ec23, type: 3}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -66,6 +66,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8

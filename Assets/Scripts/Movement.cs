@@ -14,4 +14,12 @@ public class Movement : MonoBehaviour
     {
         thrust.Disable();
     }
+
+    private void Update()
+    {
+        if(thrust.IsPressed())
+        {
+            Debug.Log("Thrust");
+        }
+    }
 }
