@@ -3,5 +3,5 @@ using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour
 {
-    [SerializeField] float thrustForce;
+    [SerializeField] InputAction thrust;
 }
