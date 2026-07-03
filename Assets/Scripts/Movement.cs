@@ -4,6 +4,12 @@ using UnityEngine.InputSystem;
 public class Movement : MonoBehaviour
 {
     [SerializeField] InputAction thrust;
+    [SerializeField] private Rigidbody rb;
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
 
     private void OnEnable()
     {
@@ -15,7 +21,7 @@ public class Movement : MonoBehaviour
         thrust.Disable();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if(thrust.IsPressed())
         {
