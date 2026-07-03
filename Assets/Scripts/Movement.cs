@@ -5,6 +5,7 @@ public class Movement : MonoBehaviour
 {
     [SerializeField] InputAction thrust;
     [SerializeField] private Rigidbody rb;
+    [SerializeField] float thrustPower;
 
     private void Start()
     {
@@ -25,7 +26,7 @@ public class Movement : MonoBehaviour
     {
         if(thrust.IsPressed())
         {
-            rb.AddRelativeForce(Vector3(0, 1, 0) * Time.deltaTime);
+            rb.AddRelativeForce(Vector3.up* thrustPower);
         }
     }
 }
