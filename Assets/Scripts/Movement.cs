@@ -25,7 +25,7 @@ public class Movement : MonoBehaviour
     {
         if(thrust.IsPressed())
         {
-            Debug.Log("Thrust");
+            rb.AddRelativeForce(Vector3(0, 1, 0) * Time.deltaTime);
         }
     }
 }
