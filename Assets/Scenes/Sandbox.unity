@@ -790,7 +790,7 @@ MonoBehaviour:
     m_Flags: 0
   rb: {fileID: 1833675954}
   thrustPower: 1000
-  rotationPower: 500
+  rotationPower: 100
 --- !u!65 &1833675953
 BoxCollider:
   m_ObjectHideFlags: 0
