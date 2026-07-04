@@ -30,7 +30,14 @@ public class Movement : MonoBehaviour
     private void Update()
     {
         float rotationValue = rotation.ReadValue<float>();
-        Debug.Log("The Rotation Value is" + rotationValue);
+        if (rotationValue == -1)
+        {
+            transform.Rotate(Vector3.forward * rotationPower * Time.deltaTime);
+        }
+        if (rotationValue == 1)
+        {
+            transform.Rotate(Vector3.back * rotationPower * Time.deltaTime);
+        }
     }
 
     private void ProcessThrust()
