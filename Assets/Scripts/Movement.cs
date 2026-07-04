@@ -25,12 +25,24 @@ public class Movement : MonoBehaviour
         rotation.Disable();
     }
 
-    private void FixedUpdate()
+    private void FixedUpdate(){
+        ProcessThrust();
+        
+    }
+
+    private void Update()
+    {
+        float rotationValue = rotation.ReadValue<float>();
+        Debug.Log("The Rotation Value is" + rotationValue);
+    }
+
+    private void ProcessThrust()
     {
         if(thrust.IsPressed())
         {
             rb.AddRelativeForce(Vector3.up* thrustPower * Time.deltaTime);
         }
-
     }
+
+    
 }
