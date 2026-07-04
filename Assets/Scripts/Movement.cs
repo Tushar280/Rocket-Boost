@@ -5,8 +5,11 @@ public class Movement : MonoBehaviour
 {
     [SerializeField] InputAction thrust;
     [SerializeField] InputAction rotation;
+
     [SerializeField] private Rigidbody rb;
+
     [SerializeField] float thrustPower;
+    [SerializeField] float rotationPower;
 
     private void Start()
     {
@@ -17,12 +20,6 @@ public class Movement : MonoBehaviour
     {
         thrust.Enable();
         rotation.Enable();
-    }
-    
-    private void OnDisable()
-    {
-        thrust.Disable();
-        rotation.Disable();
     }
 
     private void FixedUpdate(){
