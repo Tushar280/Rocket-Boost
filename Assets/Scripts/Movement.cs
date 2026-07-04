@@ -35,9 +35,13 @@ public class Movement : MonoBehaviour
     private void ProcessRotation()
     {
         float rotationValue = rotation.ReadValue<float>();
-
-        transform.Rotate(rotationValue * Vector3.forward * rotationPower * Time.deltaTime);
-
+        if (rotationValue != 0)
+        {
+            rb.freezeRotation = true;
+            transform.Rotate(rotationValue * Vector3.forward * rotationPower * Time.deltaTime);
+            rb.freezeRotation = false;
+        }
+    
     }
 
     private void ProcessThrust()
