@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 public class Movement : MonoBehaviour
 {
     [SerializeField] InputAction thrust;
+    [SerializeField] InputAction rotation;
     [SerializeField] private Rigidbody rb;
     [SerializeField] float thrustPower;
 
@@ -15,11 +16,13 @@ public class Movement : MonoBehaviour
     private void OnEnable()
     {
         thrust.Enable();
+        rotation.Enable();
     }
     
     private void OnDisable()
     {
         thrust.Disable();
+        rotation.Disable();
     }
 
     private void FixedUpdate()
@@ -28,5 +31,6 @@ public class Movement : MonoBehaviour
         {
             rb.AddRelativeForce(Vector3.up* thrustPower * Time.deltaTime);
         }
+
     }
 }
