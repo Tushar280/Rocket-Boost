@@ -428,6 +428,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Plat1
       objectReference: {fileID: 0}
+    - target: {fileID: 8247623115918495834, guid: d9e8d9719a9ef6549a54916fc911ad08, type: 3}
+      propertyPath: m_TagString
+      value: Finish
+      objectReference: {fileID: 0}
     - target: {fileID: 8736597529630542560, guid: d9e8d9719a9ef6549a54916fc911ad08, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.7823482
