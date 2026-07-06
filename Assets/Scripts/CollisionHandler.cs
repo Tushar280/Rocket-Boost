@@ -4,13 +4,14 @@ public class CollisionHandler : MonoBehaviour
 {
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.tag == "Friendly")
+        switch (collision.gameObject.tag)
         {
-            Debug.Log("This is a friendly object");
-        }
-        else
-        {
-            Debug.Log("This is an enemy object");
+            case "Friendly":
+                Debug.Log("This is a friendly object");
+                break;
+            default:
+                Debug.Log("This is an enemy object");
+                break;
         }
     }
 }
