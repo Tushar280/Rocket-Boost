@@ -1,10 +1,8 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
-    [SerializeField] private TMP_Text winText;
-
     private void OnCollisionEnter(Collision collision)
     {
         switch (collision.gameObject.tag)
@@ -20,7 +18,14 @@ public class CollisionHandler : MonoBehaviour
                 break;
             default:
                 Debug.Log("This is an enemy object");
+                ReloadScene();
                 break;
         }
+    }
+
+    private void ReloadScene()
+    {   
+        int currentIndex = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(currentIndex);
     }
 }
