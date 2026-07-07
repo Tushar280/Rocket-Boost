@@ -40,6 +40,6 @@ public class CollisionHandler : MonoBehaviour
             nextIndex = 0;
         }
 
-        SceneManager.LoadScene(currentIndex);
+        SceneManager.LoadScene(nextIndex);
     }   
 }
