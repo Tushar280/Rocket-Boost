@@ -13,10 +13,6 @@ public class CollisionHandler : MonoBehaviour
                 Debug.Log("This is a friendly object");
                 break;
             case "Finish":
-                if (winText != null)
-                {
-                    winText.text = "You win";
-                }
                 Debug.Log("This is the finish");
                 break;
             case "Fuel":
