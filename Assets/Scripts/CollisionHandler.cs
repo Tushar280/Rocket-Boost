@@ -34,7 +34,8 @@ public class CollisionHandler : MonoBehaviour
     {
         int currentIndex = SceneManager.GetActiveScene().buildIndex + 1;
         int nextIndex = currentIndex + 1;
-        if(currentIndex == SceneManager.sceneCountInBuildSettings)
+        
+        if(currentIndex == SceneManager.sceneCountInBuildSettings - 1)
         {
             nextIndex = 0;
         }
