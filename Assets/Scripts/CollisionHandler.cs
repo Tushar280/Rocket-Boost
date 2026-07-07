@@ -32,7 +32,13 @@ public class CollisionHandler : MonoBehaviour
 
     private void LoadNextLevel()
     {
-        int nextIndex = SceneManager.GetActiveScene().buildIndex + 1;
-        SceneManager.LoadScene(nextIndex);
+        int currentIndex = SceneManager.GetActiveScene().buildIndex + 1;
+        int nextIndex = currentIndex + 1;
+        if(currentIndex == SceneManager.sceneCountInBuildSettings)
+        {
+            nextIndex = 0;
+        }
+
+        SceneManager.LoadScene(currentIndex);
     }   
 }
