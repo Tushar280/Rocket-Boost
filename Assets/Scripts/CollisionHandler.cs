@@ -14,7 +14,7 @@ public class CollisionHandler : MonoBehaviour
                 break;
             case "Finish":
                 Debug.Log("This is the finish");
-                LoadNextLevel();
+                GameWin();
                 break;
             case "Fuel":
                 Debug.Log("This is fuel");
@@ -50,5 +50,12 @@ public class CollisionHandler : MonoBehaviour
 
         GetComponent<Movement>().enabled = false;
         
-    }   
+    }
+
+    private void GameWin()
+    {
+        Invoke("LoadNextLevel",delay);
+        GetComponent<Movement>().enabled = false;
+        
+    }
 }
