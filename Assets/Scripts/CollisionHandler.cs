@@ -7,10 +7,16 @@ public class CollisionHandler : MonoBehaviour
     [SerializeField] private AudioClip explosionSound;
     [SerializeField] private AudioClip landingSound;
 
+    bool isCrashed = false;
+
     [SerializeField] float delay = 1.5f;
 
     private void OnCollisionEnter(Collision collision)
     {
+        if(isCrashed)
+        {
+            return;
+        }
         switch (collision.gameObject.tag)
         {
             case "Friendly":
@@ -50,6 +56,7 @@ public class CollisionHandler : MonoBehaviour
 
     private void GameOver()
     {
+        isCrashed = true;
         audioSource.PlayOneShot(explosionSound);
         Invoke("ReloadScene",delay);
         GetComponent<Movement>().enabled = false;
