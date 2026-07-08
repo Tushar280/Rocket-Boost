@@ -8,12 +8,13 @@ public class CollisionHandler : MonoBehaviour
     [SerializeField] private AudioClip landingSound;
 
     bool isCrashed = false;
+    bool isFinished = false;
 
     [SerializeField] float delay = 1.5f;
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(isCrashed)
+        if(isCrashed || isFinished)
         {
             return;
         }
@@ -65,6 +66,7 @@ public class CollisionHandler : MonoBehaviour
 
     private void GameWin()
     {
+        isFinished = true;
         audioSource.PlayOneShot(landingSound);
         Invoke("LoadNextLevel",delay);
         GetComponent<Movement>().enabled = false;
