@@ -3,6 +3,8 @@ using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
+    [SerializeField] float delay = 1.5f;
+
     private void OnCollisionEnter(Collision collision)
     {
         switch (collision.gameObject.tag)
@@ -44,7 +46,7 @@ public class CollisionHandler : MonoBehaviour
 
     private void GameOver()
     {
-        Invoke("ReloadScene",1.5f);
+        Invoke("ReloadScene",delay);
 
         GetComponent<Movement>().enabled = false;
         
