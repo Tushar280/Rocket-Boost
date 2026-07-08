@@ -293,6 +293,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0c6ddac274ee8543b48cc1f9026bca3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  audioSource: {fileID: 0}
+  explosionSound: {fileID: 8300000, guid: 5d302b8d22877e54b8a8b14b52d42c36, type: 3}
+  landingSound: {fileID: 8300000, guid: 7722b9742db174b4d9b2e703583002e3, type: 3}
   delay: 1.5
 --- !u!1001 &6525448906463743861
 PrefabInstance:

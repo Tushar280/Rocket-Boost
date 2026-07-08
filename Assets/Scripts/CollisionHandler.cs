@@ -3,6 +3,10 @@ using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip explosionSound;
+    [SerializeField] private AudioClip landingSound;
+
     [SerializeField] float delay = 1.5f;
 
     private void OnCollisionEnter(Collision collision)
@@ -46,14 +50,15 @@ public class CollisionHandler : MonoBehaviour
 
     private void GameOver()
     {
+        audioSource.PlayOneShot(explosionSound);
         Invoke("ReloadScene",delay);
-
         GetComponent<Movement>().enabled = false;
         
     }
 
     private void GameWin()
     {
+        audioSource.PlayOneShot(landingSound);
         Invoke("LoadNextLevel",delay);
         GetComponent<Movement>().enabled = false;
         
