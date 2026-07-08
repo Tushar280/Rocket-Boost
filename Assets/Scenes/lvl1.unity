@@ -1311,6 +1311,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 906060004818714232, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
+      propertyPath: m_Resource
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3305881447477754988, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
+      propertyPath: thrustSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 405a72a1b17f7824da0f267fc761224a, type: 3}
     - target: {fileID: 3972777730325060410, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.22

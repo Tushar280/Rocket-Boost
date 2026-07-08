@@ -133,6 +133,7 @@ MonoBehaviour:
     m_Flags: 0
   rb: {fileID: 7228682205613290961}
   audioSource: {fileID: 0}
+  thrustSound: {fileID: 8300000, guid: 405a72a1b17f7824da0f267fc761224a, type: 3}
   thrustPower: 1000
   rotationPower: 100
 --- !u!54 &7228682205613290961
