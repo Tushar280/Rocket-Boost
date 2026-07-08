@@ -19,8 +19,7 @@ public class CollisionHandler : MonoBehaviour
                 break;
             default:
                 Debug.Log("This is an enemy object");
-                Invoke("ReloadScene()",2.0f);
-                ReloadScene();
+                Invoke("ReloadScene",2f);
                 break;
         }
     }
