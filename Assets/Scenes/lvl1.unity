@@ -1237,6 +1237,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3972777730325060410, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
   m_PrefabInstance: {fileID: 90128313508449454}
   m_PrefabAsset: {fileID: 0}
+--- !u!82 &1833675953 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 906060004818714232, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
+  m_PrefabInstance: {fileID: 90128313508449454}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2034743193
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1315,6 +1320,10 @@ PrefabInstance:
       propertyPath: m_Resource
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 1357857499500986909, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 1833675953}
     - target: {fileID: 3305881447477754988, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
       propertyPath: thrustSound
       value: 
