@@ -57,6 +57,7 @@ public class CollisionHandler : MonoBehaviour
 
     private void GameOver()
     {
+        audioSource.Stop();
         isCrashed = true;
         audioSource.PlayOneShot(explosionSound);
         Invoke("ReloadScene",delay);
@@ -66,6 +67,7 @@ public class CollisionHandler : MonoBehaviour
 
     private void GameWin()
     {
+        audioSource.Stop();
         isFinished = true;
         audioSource.PlayOneShot(landingSound);
         Invoke("LoadNextLevel",delay);
