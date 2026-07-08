@@ -559,7 +559,10 @@ PrefabInstance:
       value: Rick's Weird Space Pod
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8600637378423474695, guid: cf91000b018c5e64d87fba48f5ab81b9, type: 3}
+    - {fileID: 6498824529509925112, guid: cf91000b018c5e64d87fba48f5ab81b9, type: 3}
+    - {fileID: 6777554938771796160, guid: cf91000b018c5e64d87fba48f5ab81b9, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cf91000b018c5e64d87fba48f5ab81b9, type: 3}
