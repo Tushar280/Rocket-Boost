@@ -53,10 +53,14 @@ public class Movement : MonoBehaviour
     {
         if(thrust.IsPressed())
         {
-            vfxLaunch.Play();
+            
             if(!audioSource.isPlaying)
             {
                 audioSource.PlayOneShot(thrustSound);
+            }
+            if(!vfxLaunch.isPlaying)
+            {
+                vfxLaunch.Play();
             }
             rb.AddRelativeForce(Vector3.up* thrustPower * Time.deltaTime);
         }
