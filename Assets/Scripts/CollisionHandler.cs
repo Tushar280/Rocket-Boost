@@ -3,12 +3,15 @@ using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
-    [SerializeField] private AudioSource audioSource;
+    [SerializeField]private AudioSource audioSource;
     [SerializeField] private AudioClip explosionSound;
     [SerializeField] private AudioClip landingSound;
 
     bool isCrashed = false;
     bool isFinished = false;
+
+    [SerializeField] private ParticleSystem vfxCrash;
+    [SerializeField] private ParticleSystem vfxLanding;
 
     [SerializeField] float delay = 1.5f;
 
@@ -59,6 +62,7 @@ public class CollisionHandler : MonoBehaviour
     {
         audioSource.Stop();
         isCrashed = true;
+        vfxCrash.Play();
         audioSource.PlayOneShot(explosionSound);
         Invoke("ReloadScene",delay);
         GetComponent<Movement>().enabled = false;
@@ -68,6 +72,7 @@ public class CollisionHandler : MonoBehaviour
     private void GameWin()
     {
         audioSource.Stop();
+        vfxLanding.Play();
         isFinished = true;
         audioSource.PlayOneShot(landingSound);
         Invoke("LoadNextLevel",delay);

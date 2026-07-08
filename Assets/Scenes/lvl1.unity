@@ -1325,6 +1325,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1833675953}
     - target: {fileID: 3305881447477754988, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
+      propertyPath: vfxLaunch
+      value: 
+      objectReference: {fileID: 90128313508449455}
+    - target: {fileID: 3305881447477754988, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
       propertyPath: thrustSound
       value: 
       objectReference: {fileID: 8300000, guid: 405a72a1b17f7824da0f267fc761224a, type: 3}
@@ -1377,6 +1381,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
+--- !u!198 &90128313508449455 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 4352275710476725283, guid: 0fb163f4eb587564984bab52da3d72c5, type: 3}
+  m_PrefabInstance: {fileID: 90128313508449454}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1130353756504898671
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -6,9 +6,11 @@ public class Movement : MonoBehaviour
     [SerializeField] InputAction thrust;
     [SerializeField] InputAction rotation;
 
-    [SerializeField] private Rigidbody rb;
-    [SerializeField] private AudioSource audioSource;
+    private Rigidbody rb;
+    private AudioSource audioSource;
     [SerializeField] private AudioClip thrustSound;
+
+    [SerializeField] private ParticleSystem vfxLaunch;
 
     [SerializeField] float thrustPower;
     [SerializeField] float rotationPower;
@@ -51,6 +53,7 @@ public class Movement : MonoBehaviour
     {
         if(thrust.IsPressed())
         {
+            vfxLaunch.Play();
             if(!audioSource.isPlaying)
             {
                 audioSource.PlayOneShot(thrustSound);
@@ -59,6 +62,7 @@ public class Movement : MonoBehaviour
         }
         else
         {
+            vfxLaunch.Stop();
             audioSource.Stop();
         }
     }
