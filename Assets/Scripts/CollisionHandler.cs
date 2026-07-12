@@ -45,8 +45,14 @@ public class CollisionHandler : MonoBehaviour
     {
         if(Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            Application.Quit();
+            QuitGame();
         }
+    }
+
+    private void QuitGame()
+    {
+        Application.Quit();
+        Debug.Log("Quitting game");
     }
 
     private void ReloadScene()
