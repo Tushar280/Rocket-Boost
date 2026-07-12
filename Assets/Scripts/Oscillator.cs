@@ -17,7 +17,8 @@ public class Oscillator : MonoBehaviour
 
     void Update()
     {
-       
+       movementFactor = Mathf.PingPong(Time.time*speed, 1);
+       transform.position = Vector3.Lerp(startPosition, endPosition, movementFactor);
     }
 
     
