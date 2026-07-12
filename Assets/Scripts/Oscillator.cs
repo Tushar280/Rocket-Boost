@@ -2,15 +2,13 @@ using UnityEngine;
 
 public class Oscillator : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [SerializeField] Vector3 movementVector;
+    [SerializeField] float period = 2f;
+
+    private void Update()
     {
-        
+        float cycle01 = Time.time / period; // goes 0 -> 1 and back to 0
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 }
