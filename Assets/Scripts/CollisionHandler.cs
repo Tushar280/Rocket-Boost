@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class CollisionHandler : MonoBehaviour
 {
@@ -37,6 +38,14 @@ public class CollisionHandler : MonoBehaviour
                 Debug.Log("This is an enemy object");
                 GameOver();
                 break;
+        }
+    }
+
+    private void Update()
+    {
+        if(Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            Application.Quit();
         }
     }
 
