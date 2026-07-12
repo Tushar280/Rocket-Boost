@@ -2037,7 +2037,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2195885035508927664, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.54
       objectReference: {fileID: 0}
     - target: {fileID: 2195885035508927664, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2096,8 +2096,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f54836db9b8810c45987881e272df79f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Oscillator
-  movementVector: {x: 0, y: 0, z: 0}
-  speed: 0
+  movementVector: {x: 0, y: 3.3, z: 0}
+  speed: 1
 --- !u!1001 &1603260864
 PrefabInstance:
   m_ObjectHideFlags: 0
