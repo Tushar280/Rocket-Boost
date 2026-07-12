@@ -1681,6 +1681,16 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2d2baf9e37e36e045abf18859d4bb082, type: 3}
   m_PrefabInstance: {fileID: 828372326}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1162971571 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1527434280579061258, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
+  m_PrefabInstance: {fileID: 1508288673}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1215330278 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1527434280579061258, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
+  m_PrefabInstance: {fileID: 1261847164}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1219477429 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2d2baf9e37e36e045abf18859d4bb082, type: 3}
@@ -1745,13 +1755,30 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1527434280579061258, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1261847169}
   m_SourcePrefab: {fileID: 100100000, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
 --- !u!4 &1261847165 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2195885035508927664, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
   m_PrefabInstance: {fileID: 1261847164}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1261847169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215330278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f54836db9b8810c45987881e272df79f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Oscillator
+  movementVector: {x: 0, y: 5.66, z: 0}
+  speed: 1
 --- !u!1001 &1329356725
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2047,13 +2074,30 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1527434280579061258, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1508288678}
   m_SourcePrefab: {fileID: 100100000, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
 --- !u!4 &1508288674 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2195885035508927664, guid: e50b43f7ac866494aaa5979b1b0498cc, type: 3}
   m_PrefabInstance: {fileID: 1508288673}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1508288678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162971571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f54836db9b8810c45987881e272df79f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Oscillator
+  movementVector: {x: 0, y: 0, z: 0}
+  speed: 0
 --- !u!1001 &1603260864
 PrefabInstance:
   m_ObjectHideFlags: 0
