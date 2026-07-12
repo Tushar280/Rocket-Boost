@@ -11,7 +11,8 @@ public class Oscillator : MonoBehaviour
 
     void Start()
     {
-       startPosition = transform.endPosition;
+       startPosition = transform.position;
+       endPosition = startPosition + movementVector;
     }
 
     void Update()
