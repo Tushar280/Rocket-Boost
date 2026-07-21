@@ -41,19 +41,8 @@ public class CollisionHandler : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if(Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            QuitGame();
-        }
-    }
+    // Update logic moved to PauseMenuManager for in-game pause menu control
 
-    private void QuitGame()
-    {
-        Application.Quit();
-        Debug.Log("Quitting game");
-    }
 
     private void ReloadScene()
     {
