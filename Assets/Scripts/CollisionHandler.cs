@@ -16,6 +16,11 @@ public class CollisionHandler : MonoBehaviour
 
     [SerializeField] float delay = 1.5f;
 
+    private void Start()
+    {
+        LevelHUDManager.EnsureInstance();
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if(isCrashed || isFinished)

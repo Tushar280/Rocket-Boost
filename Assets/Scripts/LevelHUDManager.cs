@@ -12,13 +12,18 @@ public class LevelHUDManager : MonoBehaviour
     private GameObject hudCanvasObj;
     private GameObject levelTitleObj;
     private Text levelTitleText;
+    
     private GameObject levelCompletePanel;
+    private Text winTitleText;
     private Text winSubText;
+    private Button nextLevelBtnComp;
+    private Button mainMenuBtnComp;
+    private Button exitDesktopBtnComp;
 
-    private float displayDuration = 2.0f;
+    private float displayDuration = 2.5f;
     private Coroutine hideTitleCoroutine;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoInitHUD()
     {
         EnsureInstance();
@@ -33,12 +38,6 @@ public class LevelHUDManager : MonoBehaviour
         {
             Instance = existing;
             return Instance;
-        }
-
-        Scene activeScene = SceneManager.GetActiveScene();
-        if (activeScene.name == "0MainMenu" || activeScene.buildIndex == 0)
-        {
-            return null;
         }
 
         GameObject hudObj = new GameObject("LevelHUDManager");
@@ -76,29 +75,33 @@ public class LevelHUDManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        Time.timeScale = 1.0f; // Unpause time on scene load
         EnsureUIBuilt();
         TriggerLevelTitleForCurrentScene();
     }
 
-    public static string FormatLevelName(string rawName)
+    public static string GetCleanLevelName(string rawName)
     {
-        if (string.IsNullOrEmpty(rawName)) return "\"Space Orbit\"";
+        if (string.IsNullOrEmpty(rawName)) return "Space Orbit";
 
         // Remove numeric prefixes (e.g. 1Mercury -> Mercury, 4jupiter -> jupiter)
         string cleaned = System.Text.RegularExpressions.Regex.Replace(rawName, @"^\d+", "").Trim();
         if (string.IsNullOrEmpty(cleaned)) cleaned = rawName;
 
-        // Capitalize first letter (e.g. jupiter -> Jupiter)
-        cleaned = char.ToUpper(cleaned[0]) + (cleaned.Length > 1 ? cleaned.Substring(1) : "");
+        // Capitalize first letter
+        return char.ToUpper(cleaned[0]) + (cleaned.Length > 1 ? cleaned.Substring(1) : "");
+    }
 
-        return $"\"{cleaned}\"";
+    public static string FormatLevelName(string rawName)
+    {
+        return $"\"{GetCleanLevelName(rawName)}\"";
     }
 
     public void TriggerLevelTitleForCurrentScene()
     {
         Scene activeScene = SceneManager.GetActiveScene();
 
-        // If in Main Menu, hide HUD
+        // If in Main Menu, hide HUD canvas
         if (activeScene.name == "0MainMenu" || activeScene.buildIndex == 0)
         {
             if (hudCanvasObj != null) hudCanvasObj.SetActive(false);
@@ -124,12 +127,22 @@ public class LevelHUDManager : MonoBehaviour
 
     private IEnumerator HideTitleRoutine()
     {
-        yield return new WaitForSeconds(displayDuration);
+        yield return new WaitForSecondsRealtime(displayDuration);
 
         if (levelTitleObj != null)
         {
             levelTitleObj.SetActive(false);
         }
+    }
+
+    private bool IsLastLevel()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        int currentIndex = activeScene.buildIndex;
+        bool isNeptune = activeScene.name.ToLower().Contains("neptune");
+        bool isLastBuildIndex = (currentIndex >= SceneManager.sceneCountInBuildSettings - 1) && SceneManager.sceneCountInBuildSettings > 1;
+
+        return isNeptune || isLastBuildIndex;
     }
 
     public void ShowLevelCompleteMenu()
@@ -140,12 +153,31 @@ public class LevelHUDManager : MonoBehaviour
 
         if (levelCompletePanel != null)
         {
-            string formattedName = FormatLevelName(SceneManager.GetActiveScene().name);
-            if (winSubText != null)
+            string cleanName = GetCleanLevelName(SceneManager.GetActiveScene().name);
+
+            if (IsLastLevel())
             {
-                winSubText.text = formattedName + " MISSION ACCOMPLISHED";
+                // Final Level (Neptune) Finish Screen
+                if (winTitleText != null) winTitleText.text = "GALAXY CONQUERED!";
+                if (winSubText != null) winSubText.text = $"\"{cleanName}\" COMPLETED - ALL LEVELS CLEARED!";
+
+                if (nextLevelBtnComp != null) nextLevelBtnComp.gameObject.SetActive(false);
+                if (mainMenuBtnComp != null) mainMenuBtnComp.gameObject.SetActive(true);
+                if (exitDesktopBtnComp != null) exitDesktopBtnComp.gameObject.SetActive(true);
             }
+            else
+            {
+                // Regular Levels (1-4) Finish Screen
+                if (winTitleText != null) winTitleText.text = "LEVEL COMPLETE!";
+                if (winSubText != null) winSubText.text = $"\"{cleanName}\" MISSION ACCOMPLISHED";
+
+                if (nextLevelBtnComp != null) nextLevelBtnComp.gameObject.SetActive(true);
+                if (mainMenuBtnComp != null) mainMenuBtnComp.gameObject.SetActive(true);
+                if (exitDesktopBtnComp != null) exitDesktopBtnComp.gameObject.SetActive(false);
+            }
+
             levelCompletePanel.SetActive(true);
+            Time.timeScale = 0.0f; // Pause game physics on win menu
         }
     }
 
@@ -157,7 +189,7 @@ public class LevelHUDManager : MonoBehaviour
 
         if (nextIndex >= SceneManager.sceneCountInBuildSettings)
         {
-            nextIndex = 0; // Loop to Main Menu if completed all levels
+            nextIndex = 0; // Loop to Main Menu
         }
 
         SceneManager.LoadScene(nextIndex);
@@ -167,6 +199,16 @@ public class LevelHUDManager : MonoBehaviour
     {
         Time.timeScale = 1.0f;
         SceneManager.LoadScene(0); // 0MainMenu
+    }
+
+    public void ExitToDesktop()
+    {
+        Time.timeScale = 1.0f;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     private void EnsureUIBuilt()
@@ -187,7 +229,7 @@ public class LevelHUDManager : MonoBehaviour
 
             Canvas canvas = hudCanvasObj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100; // Above scene objects
+            canvas.sortingOrder = 900;
 
             CanvasScaler scaler = hudCanvasObj.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -209,7 +251,7 @@ public class LevelHUDManager : MonoBehaviour
 
             levelTitleText = levelTitleObj.AddComponent<Text>();
             levelTitleText.font = MainMenuUIBuilder.GetSafeFont();
-            levelTitleText.fontSize = 60;
+            levelTitleText.fontSize = 64;
             levelTitleText.alignment = TextAnchor.MiddleCenter;
             levelTitleText.color = Color.white;
             levelTitleText.fontStyle = FontStyle.Bold;
@@ -227,7 +269,7 @@ public class LevelHUDManager : MonoBehaviour
             cardRect.anchorMin = new Vector2(0.5f, 0.5f);
             cardRect.anchorMax = new Vector2(0.5f, 0.5f);
             cardRect.pivot = new Vector2(0.5f, 0.5f);
-            cardRect.sizeDelta = new Vector2(500, 380);
+            cardRect.sizeDelta = new Vector2(520, 380);
 
             Image cardBg = levelCompletePanel.AddComponent<Image>();
             cardBg.color = new Color(0.05f, 0.02f, 0.12f, 0.92f);
@@ -241,7 +283,7 @@ public class LevelHUDManager : MonoBehaviour
 
             // Win Header
             GameObject winTitleObj = CreateUIElement("WinTitleText", levelCompletePanel.transform);
-            Text winTitleText = winTitleObj.AddComponent<Text>();
+            winTitleText = winTitleObj.AddComponent<Text>();
             winTitleText.text = "LEVEL COMPLETE!";
             winTitleText.font = MainMenuUIBuilder.GetSafeFont();
             winTitleText.fontSize = 32;
@@ -249,22 +291,22 @@ public class LevelHUDManager : MonoBehaviour
             winTitleText.color = new Color(0.85f, 0.45f, 1.0f);
             winTitleText.fontStyle = FontStyle.Bold;
             winTitleObj.AddComponent<Outline>().effectColor = Color.black;
-            winTitleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 50);
+            winTitleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(460, 50);
 
             // Subtitle
             GameObject winSubObj = CreateUIElement("WinSubText", levelCompletePanel.transform);
             winSubText = winSubObj.AddComponent<Text>();
             winSubText.text = "MISSION ACCOMPLISHED";
             winSubText.font = MainMenuUIBuilder.GetSafeFont();
-            winSubText.fontSize = 15;
+            winSubText.fontSize = 16;
             winSubText.alignment = TextAnchor.MiddleCenter;
             winSubText.color = new Color(0.9f, 0.9f, 1.0f);
-            winSubObj.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 25);
+            winSubObj.GetComponent<RectTransform>().sizeDelta = new Vector2(460, 25);
 
-            // Next Level Button
-            Button nextBtn = CreateSpaceButton("NextLevelBtn", "Go to Next Level ▶", levelCompletePanel.transform, LoadNextLevel);
-            // Main Menu Button
-            Button menuBtn = CreateSpaceButton("MainMenuBtn", "Exit to Main Menu 🏠", levelCompletePanel.transform, ExitToMainMenu);
+            // Buttons
+            nextLevelBtnComp = CreateSpaceButton("NextLevelBtn", "Go to Next Level ▶", levelCompletePanel.transform, LoadNextLevel);
+            mainMenuBtnComp = CreateSpaceButton("MainMenuBtn", "Exit to Main Menu 🏠", levelCompletePanel.transform, ExitToMainMenu);
+            exitDesktopBtnComp = CreateSpaceButton("ExitDesktopBtn", "Exit to Desktop 🚪", levelCompletePanel.transform, ExitToDesktop);
 
             levelCompletePanel.SetActive(false);
         }
