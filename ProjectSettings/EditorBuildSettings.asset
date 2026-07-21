@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/2Venus.unity
     guid: 3bd890ff20a5ff5458f1e79642df4223
   - enabled: 1
-    path: Assets/Scenes/lvl2.unity
+    path: Assets/Scenes/3Mars.unity
     guid: 1f4a89338f6b9e34192414e7b50a47cd
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
