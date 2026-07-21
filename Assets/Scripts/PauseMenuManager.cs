@@ -23,12 +23,32 @@ public class PauseMenuManager : MonoBehaviour
 
     public bool IsPaused { get; private set; } = false;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void AutoInitPauseMenu()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (activeScene.name == "0MainMenu" || activeScene.buildIndex == 0)
+        {
+            return;
+        }
+
+        if (Instance == null && FindObjectOfType<PauseMenuManager>() == null)
+        {
+            GameObject pauseObj = new GameObject("PauseMenuManager");
+            pauseObj.AddComponent<PauseMenuManager>();
+        }
+    }
+
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
+            Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
 
         if (pauseMenuPanel == null)
         {
@@ -46,21 +66,32 @@ public class PauseMenuManager : MonoBehaviour
         // Toggle Pause menu when ESC is pressed
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            if (IsPaused)
+            TogglePause();
+        }
+    }
+
+    public void TogglePause()
+    {
+        // Don't pause if on main menu
+        if (SceneManager.GetActiveScene().name == "0MainMenu" || SceneManager.GetActiveScene().buildIndex == 0)
+        {
+            return;
+        }
+
+        if (IsPaused)
+        {
+            if (soundOptionsPanel != null && soundOptionsPanel.activeSelf)
             {
-                if (soundOptionsPanel != null && soundOptionsPanel.activeSelf)
-                {
-                    CloseSoundOptions();
-                }
-                else
-                {
-                    ResumeGame();
-                }
+                CloseSoundOptions();
             }
             else
             {
-                PauseGame();
+                ResumeGame();
             }
+        }
+        else
+        {
+            PauseGame();
         }
     }
 
@@ -68,6 +99,14 @@ public class PauseMenuManager : MonoBehaviour
     {
         IsPaused = true;
         Time.timeScale = 0.0f;
+
+        if (pauseMenuPanel == null)
+        {
+            PauseMenuUIBuilder.EnsureUI(this);
+        }
+
+        Transform parentTransform = pauseMenuPanel != null ? pauseMenuPanel.transform.parent : null;
+        if (parentTransform != null) parentTransform.gameObject.SetActive(true);
 
         if (pauseMenuPanel != null) pauseMenuPanel.SetActive(true);
         if (soundOptionsPanel != null) soundOptionsPanel.SetActive(false);
@@ -80,7 +119,16 @@ public class PauseMenuManager : MonoBehaviour
         IsPaused = false;
         Time.timeScale = 1.0f;
 
-        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
+        if (pauseMenuPanel != null)
+        {
+            Transform parentTransform = pauseMenuPanel.transform.parent;
+            if (parentTransform != null && parentTransform.name.Contains("Backdrop"))
+            {
+                parentTransform.gameObject.SetActive(false);
+            }
+            pauseMenuPanel.SetActive(false);
+        }
+
         if (soundOptionsPanel != null) soundOptionsPanel.SetActive(false);
     }
 

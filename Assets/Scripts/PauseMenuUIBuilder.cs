@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 [ExecuteAlways]
 public class PauseMenuUIBuilder : MonoBehaviour
@@ -20,15 +21,34 @@ public class PauseMenuUIBuilder : MonoBehaviour
 
     public static void EnsureUI(PauseMenuManager manager)
     {
-        // 1. Ensure EventSystem
-        if (FindObjectOfType<EventSystem>() == null)
+        // 1. EventSystem
+        EventSystem eventSys = FindObjectOfType<EventSystem>();
+        GameObject eventSystemObj;
+
+        if (eventSys == null)
         {
-            GameObject eventSystemObj = new GameObject("EventSystem");
-            eventSystemObj.AddComponent<EventSystem>();
-            eventSystemObj.AddComponent<StandaloneInputModule>();
+            eventSystemObj = new GameObject("EventSystem");
+            eventSys = eventSystemObj.AddComponent<EventSystem>();
+        }
+        else
+        {
+            eventSystemObj = eventSys.gameObject;
         }
 
-        // 2. Ensure Canvas
+        StandaloneInputModule legacyModule = eventSystemObj.GetComponent<StandaloneInputModule>();
+        if (legacyModule != null)
+        {
+            if (Application.isPlaying) Destroy(legacyModule);
+            else DestroyImmediate(legacyModule);
+        }
+
+        InputSystemUIInputModule inputModule = eventSystemObj.GetComponent<InputSystemUIInputModule>();
+        if (inputModule == null)
+        {
+            eventSystemObj.AddComponent<InputSystemUIInputModule>();
+        }
+
+        // 2. Canvas
         Canvas canvas = FindObjectOfType<Canvas>();
         GameObject canvasObj;
 
@@ -51,23 +71,35 @@ public class PauseMenuUIBuilder : MonoBehaviour
             canvasObj = canvas.gameObject;
         }
 
-        // Backdrop Dark Overlay
+        // Pixel Art Galaxy Backdrop Overlay
         GameObject backdropObj = CreateUIElement("PauseBackdrop", canvasObj.transform);
         RectTransform bdRect = backdropObj.GetComponent<RectTransform>();
         StretchToFill(bdRect);
         Image bdImg = backdropObj.AddComponent<Image>();
-        bdImg.color = new Color(0.02f, 0.05f, 0.09f, 0.85f);
 
-        // Pause Main Menu Card
+        Sprite galaxySprite = MainMenuUIBuilder.GetGalaxySprite();
+        if (galaxySprite != null)
+        {
+            bdImg.sprite = galaxySprite;
+            bdImg.color = new Color(0.55f, 0.45f, 0.65f, 0.92f); // Galaxy sprite with pause tint
+            bdImg.type = Image.Type.Simple;
+            bdImg.preserveAspect = false;
+        }
+        else
+        {
+            bdImg.color = new Color(0.06f, 0.02f, 0.12f, 0.88f);
+        }
+
+        // Pause Main Card
         GameObject pauseCardObj = CreateUIElement("PauseMainCard", backdropObj.transform);
         RectTransform cardRect = pauseCardObj.GetComponent<RectTransform>();
         cardRect.anchorMin = new Vector2(0.5f, 0.5f);
         cardRect.anchorMax = new Vector2(0.5f, 0.5f);
         cardRect.pivot = new Vector2(0.5f, 0.5f);
-        cardRect.sizeDelta = new Vector2(500, 520);
+        cardRect.sizeDelta = new Vector2(460, 480);
 
         Image cardImg = pauseCardObj.AddComponent<Image>();
-        cardImg.color = new Color(0.03f, 0.08f, 0.14f, 0.95f);
+        cardImg.color = new Color(0.04f, 0.02f, 0.1f, 0.82f);
 
         VerticalLayoutGroup layout = pauseCardObj.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(30, 30, 30, 30);
@@ -83,9 +115,9 @@ public class PauseMenuUIBuilder : MonoBehaviour
         titleText.font = GetSafeFont();
         titleText.fontSize = 32;
         titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.color = new Color(0.75f, 0.9f, 1.0f);
+        titleText.color = new Color(0.9f, 0.85f, 1.0f);
         titleText.fontStyle = FontStyle.Bold;
-        titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 50);
+        titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(400, 45);
 
         // Buttons
         Button resumeBtn = CreateRefButton("ResumeBtn", "Return to Game", pauseCardObj.transform, manager != null ? manager.ResumeGame : null);
@@ -99,10 +131,10 @@ public class PauseMenuUIBuilder : MonoBehaviour
         soundRect.anchorMin = new Vector2(0.5f, 0.5f);
         soundRect.anchorMax = new Vector2(0.5f, 0.5f);
         soundRect.pivot = new Vector2(0.5f, 0.5f);
-        soundRect.sizeDelta = new Vector2(500, 480);
+        soundRect.sizeDelta = new Vector2(520, 480);
 
         Image soundImg = soundCardObj.AddComponent<Image>();
-        soundImg.color = new Color(0.03f, 0.08f, 0.14f, 0.95f);
+        soundImg.color = new Color(0.04f, 0.02f, 0.1f, 0.82f);
 
         VerticalLayoutGroup soundLayout = soundCardObj.AddComponent<VerticalLayoutGroup>();
         soundLayout.padding = new RectOffset(30, 30, 30, 30);
@@ -117,13 +149,13 @@ public class PauseMenuUIBuilder : MonoBehaviour
         soundTitleText.font = GetSafeFont();
         soundTitleText.fontSize = 28;
         soundTitleText.alignment = TextAnchor.MiddleCenter;
-        soundTitleText.color = new Color(0.75f, 0.9f, 1.0f);
+        soundTitleText.color = new Color(0.9f, 0.85f, 1.0f);
         soundTitleText.fontStyle = FontStyle.Bold;
-        soundTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 50);
+        soundTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 45);
 
-        Slider masterSlider = CreateVolumeSlider("Master Volume", manager != null ? manager.SetMasterVolume : null, soundCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.MasterVolume : 1.0f);
-        Slider musicSlider = CreateVolumeSlider("Music Volume", manager != null ? manager.SetMusicVolume : null, soundCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.MusicVolume : 0.8f);
-        Slider sfxSlider = CreateVolumeSlider("SFX Volume", manager != null ? manager.SetSFXVolume : null, soundCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.SFXVolume : 0.8f);
+        Slider masterSlider = CreatePristineVolumeSlider("Master Volume", manager != null ? manager.SetMasterVolume : null, soundCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.MasterVolume : 1.0f);
+        Slider musicSlider = CreatePristineVolumeSlider("Music Volume", manager != null ? manager.SetMusicVolume : null, soundCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.MusicVolume : 0.8f);
+        Slider sfxSlider = CreatePristineVolumeSlider("SFX Volume", manager != null ? manager.SetSFXVolume : null, soundCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.SFXVolume : 0.8f);
 
         Button backSoundBtn = CreateRefButton("BackSoundBtn", "Back to Pause Menu", soundCardObj.transform, manager != null ? manager.CloseSoundOptions : null);
 
@@ -150,17 +182,17 @@ public class PauseMenuUIBuilder : MonoBehaviour
     private static Button CreateRefButton(string name, string text, Transform parent, UnityEngine.Events.UnityAction action)
     {
         GameObject btnObj = CreateUIElement(name, parent);
-        btnObj.GetComponent<RectTransform>().sizeDelta = new Vector2(360, 50);
+        btnObj.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 48);
 
         Image btnImg = btnObj.AddComponent<Image>();
-        btnImg.color = new Color(0.12f, 0.24f, 0.35f, 0.45f);
+        btnImg.color = new Color(0.2f, 0.1f, 0.35f, 0.35f);
 
         Button btn = btnObj.AddComponent<Button>();
 
         ColorBlock colors = btn.colors;
-        colors.normalColor = new Color(0.12f, 0.24f, 0.35f, 0.45f);
-        colors.highlightedColor = new Color(0.25f, 0.55f, 0.75f, 0.85f);
-        colors.pressedColor = new Color(0.0f, 0.85f, 1.0f, 1.0f);
+        colors.normalColor = new Color(0.2f, 0.1f, 0.35f, 0.35f);
+        colors.highlightedColor = new Color(0.5f, 0.25f, 0.7f, 0.7f);
+        colors.pressedColor = new Color(0.85f, 0.45f, 1.0f, 0.95f);
         btn.colors = colors;
 
         GameObject txtObj = CreateUIElement(name + "_Text", btnObj.transform);
@@ -169,7 +201,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         btnText.font = GetSafeFont();
         btnText.fontSize = 22;
         btnText.alignment = TextAnchor.MiddleCenter;
-        btnText.color = new Color(0.85f, 0.94f, 1.0f);
+        btnText.color = new Color(0.92f, 0.88f, 1.0f);
 
         StretchToFill(txtObj.GetComponent<RectTransform>());
 
@@ -181,26 +213,26 @@ public class PauseMenuUIBuilder : MonoBehaviour
         return btn;
     }
 
-    private static Slider CreateVolumeSlider(string label, UnityEngine.Events.UnityAction<float> callback, Transform parent, float initialVal)
+    private static Slider CreatePristineVolumeSlider(string labelText, UnityEngine.Events.UnityAction<float> callback, Transform parent, float initialVal)
     {
-        GameObject container = CreateUIElement(label + "_Container", parent);
-        container.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 48);
+        GameObject container = CreateUIElement(labelText + "_Container", parent);
+        container.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 42);
 
         GameObject labelObj = CreateUIElement("Label", container.transform);
-        Text labelText = labelObj.AddComponent<Text>();
-        labelText.text = label;
-        labelText.font = GetSafeFont();
-        labelText.fontSize = 18;
-        labelText.color = new Color(0.85f, 0.95f, 1.0f);
-        labelText.alignment = TextAnchor.MiddleLeft;
+        Text labelTextComp = labelObj.AddComponent<Text>();
+        labelTextComp.text = labelText;
+        labelTextComp.font = GetSafeFont();
+        labelTextComp.fontSize = 17;
+        labelTextComp.color = new Color(0.92f, 0.88f, 1.0f);
+        labelTextComp.alignment = TextAnchor.MiddleLeft;
         RectTransform lblRect = labelObj.GetComponent<RectTransform>();
         lblRect.anchorMin = new Vector2(0.02f, 0);
-        lblRect.anchorMax = new Vector2(0.45f, 1);
+        lblRect.anchorMax = new Vector2(0.42f, 1);
 
-        GameObject sliderObj = CreateUIElement(label + "_Slider", container.transform);
+        GameObject sliderObj = CreateUIElement(labelText + "_Slider", container.transform);
         RectTransform sliderRect = sliderObj.GetComponent<RectTransform>();
-        sliderRect.anchorMin = new Vector2(0.48f, 0.25f);
-        sliderRect.anchorMax = new Vector2(0.98f, 0.75f);
+        sliderRect.anchorMin = new Vector2(0.44f, 0.3f);
+        sliderRect.anchorMax = new Vector2(0.98f, 0.7f);
 
         Slider slider = sliderObj.AddComponent<Slider>();
         slider.minValue = 0f;
@@ -208,18 +240,42 @@ public class PauseMenuUIBuilder : MonoBehaviour
         slider.value = initialVal;
 
         GameObject bg = CreateUIElement("Background", sliderObj.transform);
-        StretchToFill(bg.GetComponent<RectTransform>());
-        bg.AddComponent<Image>().color = new Color(0.1f, 0.2f, 0.35f, 0.8f);
+        RectTransform bgRect = bg.GetComponent<RectTransform>();
+        bgRect.anchorMin = new Vector2(0, 0.35f);
+        bgRect.anchorMax = new Vector2(1, 0.65f);
+        bgRect.sizeDelta = Vector2.zero;
+        Image bgImg = bg.AddComponent<Image>();
+        bgImg.color = new Color(0.15f, 0.08f, 0.25f, 0.8f);
 
         GameObject fillArea = CreateUIElement("Fill Area", sliderObj.transform);
-        StretchToFill(fillArea.GetComponent<RectTransform>());
+        RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
+        fillAreaRect.anchorMin = new Vector2(0, 0.35f);
+        fillAreaRect.anchorMax = new Vector2(1, 0.65f);
+        fillAreaRect.sizeDelta = Vector2.zero;
 
         GameObject fill = CreateUIElement("Fill", fillArea.transform);
-        StretchToFill(fill.GetComponent<RectTransform>());
-        fill.AddComponent<Image>().color = new Color(0.2f, 0.8f, 1.0f, 1.0f);
+        RectTransform fillRect = fill.GetComponent<RectTransform>();
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
+        fillRect.sizeDelta = Vector2.zero;
+        Image fillImg = fill.AddComponent<Image>();
+        fillImg.color = new Color(0.85f, 0.45f, 1.0f, 1.0f);
 
-        slider.targetGraphic = fill.GetComponent<Image>();
-        slider.fillRect = fill.GetComponent<RectTransform>();
+        GameObject handleArea = CreateUIElement("Handle Slide Area", sliderObj.transform);
+        RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
+        handleAreaRect.anchorMin = Vector2.zero;
+        handleAreaRect.anchorMax = Vector2.one;
+        handleAreaRect.sizeDelta = Vector2.zero;
+
+        GameObject handle = CreateUIElement("Handle", handleArea.transform);
+        RectTransform handleRect = handle.GetComponent<RectTransform>();
+        handleRect.sizeDelta = new Vector2(18, 18);
+        Image handleImg = handle.AddComponent<Image>();
+        handleImg.color = new Color(1.0f, 0.9f, 1.0f, 1.0f);
+
+        slider.targetGraphic = handleImg;
+        slider.fillRect = fillRect;
+        slider.handleRect = handleRect;
 
         if (callback != null)
         {
