@@ -79,8 +79,16 @@ public class CollisionHandler : MonoBehaviour
         vfxLanding.Play();
         isFinished = true;
         audioSource.PlayOneShot(landingSound);
-        Invoke("LoadNextLevel",delay);
         GetComponent<Movement>().enabled = false;
-        
+
+        LevelHUDManager hud = LevelHUDManager.EnsureInstance();
+        if (hud != null)
+        {
+            hud.ShowLevelCompleteMenu();
+        }
+        else
+        {
+            Invoke("LoadNextLevel", delay);
+        }
     }
 }

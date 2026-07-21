@@ -4,7 +4,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using System.IO;
 
-[ExecuteAlways]
 public class MainMenuUIBuilder : MonoBehaviour
 {
     private static Font cachedFont;
@@ -14,9 +13,19 @@ public class MainMenuUIBuilder : MonoBehaviour
     {
         if (cachedFont != null) return cachedFont;
 
-        cachedFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        if (cachedFont == null) cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (cachedFont == null) cachedFont = Font.CreateDynamicFontFromOSFont("Arial", 18);
+        try
+        {
+            cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        }
+        catch
+        {
+            cachedFont = null;
+        }
+
+        if (cachedFont == null)
+        {
+            cachedFont = Font.CreateDynamicFontFromOSFont("Arial", 18);
+        }
 
         return cachedFont;
     }
@@ -25,12 +34,10 @@ public class MainMenuUIBuilder : MonoBehaviour
     {
         if (cachedGalaxySprite != null) return cachedGalaxySprite;
 
-        // 1. Try Resources.Load
         cachedGalaxySprite = Resources.Load<Sprite>("SpaceGalaxyBackground");
         if (cachedGalaxySprite != null) return cachedGalaxySprite;
 
 #if UNITY_EDITOR
-        // 2. Try AssetDatabase in Editor
         cachedGalaxySprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Resources/SpaceGalaxyBackground.png");
         if (cachedGalaxySprite == null)
         {
@@ -39,7 +46,6 @@ public class MainMenuUIBuilder : MonoBehaviour
         if (cachedGalaxySprite != null) return cachedGalaxySprite;
 #endif
 
-        // 3. Fallback: Direct PNG File Byte Loading (Guaranteed to work 100% of the time)
         string[] searchPaths = new string[]
         {
             Path.Combine(Application.dataPath, "Resources/SpaceGalaxyBackground.png"),
@@ -54,7 +60,7 @@ public class MainMenuUIBuilder : MonoBehaviour
                 Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
                 if (tex.LoadImage(bytes))
                 {
-                    tex.filterMode = FilterMode.Point; // Crisp pixel art galaxy
+                    tex.filterMode = FilterMode.Point;
                     cachedGalaxySprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
                     return cachedGalaxySprite;
                 }
@@ -115,10 +121,9 @@ public class MainMenuUIBuilder : MonoBehaviour
             canvasObj = canvas.gameObject;
         }
 
-        // 3. Pixel Art Galaxy Background Image (Stretched Fullscreen)
+        // 3. Pixel Art Galaxy Background (Fullscreen)
         GameObject bgObj = CreateUIElement("SpaceBackground", canvasObj.transform);
-        RectTransform bgRect = bgObj.GetComponent<RectTransform>();
-        StretchToFill(bgRect);
+        StretchToFill(bgObj.GetComponent<RectTransform>());
         Image bgImg = bgObj.AddComponent<Image>();
 
         Sprite galaxySprite = GetGalaxySprite();
@@ -134,19 +139,19 @@ public class MainMenuUIBuilder : MonoBehaviour
             bgImg.color = new Color(0.06f, 0.02f, 0.12f, 1.0f);
         }
 
-        // 4. Sleek Translucent Main Menu Card (Minimalist Reference Style)
+        // 4. Main Menu Card (Center container)
         GameObject menuCardObj = CreateUIElement("MainPanel", canvasObj.transform);
         RectTransform cardRect = menuCardObj.GetComponent<RectTransform>();
         cardRect.anchorMin = new Vector2(0.5f, 0.5f);
         cardRect.anchorMax = new Vector2(0.5f, 0.5f);
         cardRect.pivot = new Vector2(0.5f, 0.5f);
-        cardRect.sizeDelta = new Vector2(460, 520);
+        cardRect.sizeDelta = new Vector2(480, 520);
 
         Image cardBg = menuCardObj.AddComponent<Image>();
-        cardBg.color = new Color(0.05f, 0.02f, 0.12f, 0.4f); // Translucent subtle glass backdrop
+        cardBg.color = new Color(0.05f, 0.02f, 0.12f, 0.55f);
 
         VerticalLayoutGroup cardLayout = menuCardObj.AddComponent<VerticalLayoutGroup>();
-        cardLayout.padding = new RectOffset(20, 20, 20, 20);
+        cardLayout.padding = new RectOffset(25, 25, 25, 25);
         cardLayout.spacing = 18;
         cardLayout.childAlignment = TextAnchor.MiddleCenter;
         cardLayout.childControlWidth = true;
@@ -159,9 +164,10 @@ public class MainMenuUIBuilder : MonoBehaviour
         titleText.font = GetSafeFont();
         titleText.fontSize = 42;
         titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.color = new Color(0.9f, 0.85f, 1.0f, 0.95f);
+        titleText.color = Color.white;
         titleText.fontStyle = FontStyle.Bold;
-        titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(420, 55);
+        titleObj.AddComponent<Outline>().effectColor = new Color(0.1f, 0f, 0.2f, 0.9f);
+        titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(430, 55);
 
         // Subtitle Text
         GameObject subObj = CreateUIElement("SubtitleText", menuCardObj.transform);
@@ -170,25 +176,26 @@ public class MainMenuUIBuilder : MonoBehaviour
         subText.font = GetSafeFont();
         subText.fontSize = 15;
         subText.alignment = TextAnchor.MiddleCenter;
-        subText.color = new Color(0.7f, 0.6f, 0.9f, 0.75f);
-        subObj.GetComponent<RectTransform>().sizeDelta = new Vector2(420, 25);
+        subText.color = new Color(0.85f, 0.75f, 1.0f);
+        subObj.AddComponent<Outline>().effectColor = new Color(0, 0, 0, 0.8f);
+        subObj.GetComponent<RectTransform>().sizeDelta = new Vector2(430, 25);
 
-        // Sleek Minimalist Centered Buttons (matching reference image)
+        // Centered Buttons (Play, Controls, Options, Exit)
         Button playBtn = CreateRefButton("PlayBtn", "Play", menuCardObj.transform, manager != null ? manager.PlayGame : null);
         Button controlsBtn = CreateRefButton("ControlsBtn", "Controls", menuCardObj.transform, manager != null ? manager.OpenControls : null);
         Button optionsBtn = CreateRefButton("OptionsBtn", "Options", menuCardObj.transform, manager != null ? manager.OpenOptions : null);
         Button exitBtn = CreateRefButton("ExitBtn", "Exit", menuCardObj.transform, manager != null ? manager.QuitGame : null);
 
-        // 5. Controls Panel (Translucent Glass Overlay)
+        // 5. Controls Panel
         GameObject controlsCardObj = CreateUIElement("ControlsPanel", canvasObj.transform);
         RectTransform controlsRect = controlsCardObj.GetComponent<RectTransform>();
         controlsRect.anchorMin = new Vector2(0.5f, 0.5f);
         controlsRect.anchorMax = new Vector2(0.5f, 0.5f);
         controlsRect.pivot = new Vector2(0.5f, 0.5f);
-        controlsRect.sizeDelta = new Vector2(520, 540);
+        controlsRect.sizeDelta = new Vector2(500, 520);
 
         Image controlsImg = controlsCardObj.AddComponent<Image>();
-        controlsImg.color = new Color(0.04f, 0.02f, 0.1f, 0.82f); // Translucent glass backdrop
+        controlsImg.color = new Color(0.04f, 0.02f, 0.1f, 0.92f);
 
         VerticalLayoutGroup controlsLayout = controlsCardObj.AddComponent<VerticalLayoutGroup>();
         controlsLayout.padding = new RectOffset(30, 30, 30, 30);
@@ -203,8 +210,9 @@ public class MainMenuUIBuilder : MonoBehaviour
         ctrlTitleText.font = GetSafeFont();
         ctrlTitleText.fontSize = 28;
         ctrlTitleText.alignment = TextAnchor.MiddleCenter;
-        ctrlTitleText.color = new Color(0.9f, 0.85f, 1.0f);
+        ctrlTitleText.color = Color.white;
         ctrlTitleText.fontStyle = FontStyle.Bold;
+        ctrlTitle.AddComponent<Outline>().effectColor = Color.black;
         ctrlTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 45);
 
         CreateControlRow("Thrust Rocket", "SPACE / W", controlsCardObj.transform);
@@ -214,16 +222,16 @@ public class MainMenuUIBuilder : MonoBehaviour
 
         Button backCtrlBtn = CreateRefButton("BackCtrlBtn", "Back to Menu", controlsCardObj.transform, manager != null ? manager.ShowMainPanel : null);
 
-        // 6. Options Panel (Translucent Glass Overlay with Clean Sliders)
+        // 6. Options Panel
         GameObject optionsCardObj = CreateUIElement("OptionsPanel", canvasObj.transform);
         RectTransform optionsRect = optionsCardObj.GetComponent<RectTransform>();
         optionsRect.anchorMin = new Vector2(0.5f, 0.5f);
         optionsRect.anchorMax = new Vector2(0.5f, 0.5f);
         optionsRect.pivot = new Vector2(0.5f, 0.5f);
-        optionsRect.sizeDelta = new Vector2(520, 540);
+        optionsRect.sizeDelta = new Vector2(500, 520);
 
         Image optionsImg = optionsCardObj.AddComponent<Image>();
-        optionsImg.color = new Color(0.04f, 0.02f, 0.1f, 0.82f);
+        optionsImg.color = new Color(0.04f, 0.02f, 0.1f, 0.92f);
 
         VerticalLayoutGroup optionsLayout = optionsCardObj.AddComponent<VerticalLayoutGroup>();
         optionsLayout.padding = new RectOffset(30, 30, 30, 30);
@@ -238,8 +246,9 @@ public class MainMenuUIBuilder : MonoBehaviour
         optTitleText.font = GetSafeFont();
         optTitleText.fontSize = 28;
         optTitleText.alignment = TextAnchor.MiddleCenter;
-        optTitleText.color = new Color(0.9f, 0.85f, 1.0f);
+        optTitleText.color = Color.white;
         optTitleText.fontStyle = FontStyle.Bold;
+        optTitle.AddComponent<Outline>().effectColor = Color.black;
         optTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 45);
 
         Slider masterSlider = CreatePristineVolumeSlider("Master Volume", manager != null ? manager.SetMasterVolume : null, optionsCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.MasterVolume : 1.0f);
@@ -277,14 +286,14 @@ public class MainMenuUIBuilder : MonoBehaviour
         btnObj.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 48);
 
         Image btnImg = btnObj.AddComponent<Image>();
-        btnImg.color = new Color(0.2f, 0.1f, 0.35f, 0.35f);
+        btnImg.color = new Color(0.2f, 0.1f, 0.35f, 0.5f);
 
         Button btn = btnObj.AddComponent<Button>();
 
         ColorBlock colors = btn.colors;
-        colors.normalColor = new Color(0.2f, 0.1f, 0.35f, 0.35f);
-        colors.highlightedColor = new Color(0.5f, 0.25f, 0.7f, 0.7f);
-        colors.pressedColor = new Color(0.85f, 0.45f, 1.0f, 0.95f);
+        colors.normalColor = new Color(0.2f, 0.1f, 0.35f, 0.5f);
+        colors.highlightedColor = new Color(0.5f, 0.25f, 0.75f, 0.85f);
+        colors.pressedColor = new Color(0.85f, 0.45f, 1.0f, 1.0f);
         btn.colors = colors;
 
         GameObject txtObj = CreateUIElement(name + "_Text", btnObj.transform);
@@ -293,7 +302,8 @@ public class MainMenuUIBuilder : MonoBehaviour
         btnText.font = GetSafeFont();
         btnText.fontSize = 24;
         btnText.alignment = TextAnchor.MiddleCenter;
-        btnText.color = new Color(0.92f, 0.88f, 1.0f);
+        btnText.color = Color.white;
+        txtObj.AddComponent<Outline>().effectColor = Color.black;
 
         StretchToFill(txtObj.GetComponent<RectTransform>());
 
@@ -311,20 +321,30 @@ public class MainMenuUIBuilder : MonoBehaviour
         row.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 44);
 
         Image rowImg = row.AddComponent<Image>();
-        rowImg.color = new Color(0.18f, 0.08f, 0.28f, 0.35f);
+        rowImg.color = new Color(0.18f, 0.08f, 0.28f, 0.5f);
 
         GameObject labelObj = CreateUIElement("Label", row.transform);
+        RectTransform lblRect = labelObj.GetComponent<RectTransform>();
+        lblRect.anchorMin = new Vector2(0f, 0f);
+        lblRect.anchorMax = new Vector2(0.48f, 1f);
+        lblRect.offsetMin = new Vector2(16, 0); // Padding left
+        lblRect.offsetMax = new Vector2(0, 0);
+
         Text labelText = labelObj.AddComponent<Text>();
         labelText.text = label;
         labelText.font = GetSafeFont();
         labelText.fontSize = 17;
-        labelText.color = new Color(0.92f, 0.88f, 1.0f);
+        labelText.color = Color.white;
         labelText.alignment = TextAnchor.MiddleLeft;
-        RectTransform lblRect = labelObj.GetComponent<RectTransform>();
-        lblRect.anchorMin = new Vector2(0.05f, 0f);
-        lblRect.anchorMax = new Vector2(0.45f, 1f);
+        labelObj.AddComponent<Outline>().effectColor = Color.black;
 
         GameObject keyObj = CreateUIElement("Key", row.transform);
+        RectTransform keyRect = keyObj.GetComponent<RectTransform>();
+        keyRect.anchorMin = new Vector2(0.5f, 0f);
+        keyRect.anchorMax = new Vector2(1f, 1f);
+        keyRect.offsetMin = new Vector2(0, 0);
+        keyRect.offsetMax = new Vector2(-16, 0); // Padding right
+
         Text keyText = keyObj.AddComponent<Text>();
         keyText.text = key;
         keyText.font = GetSafeFont();
@@ -332,34 +352,37 @@ public class MainMenuUIBuilder : MonoBehaviour
         keyText.fontStyle = FontStyle.Bold;
         keyText.color = new Color(0.85f, 0.45f, 1.0f);
         keyText.alignment = TextAnchor.MiddleRight;
-        RectTransform keyRect = keyObj.GetComponent<RectTransform>();
-        keyRect.anchorMin = new Vector2(0.5f, 0f);
-        keyRect.anchorMax = new Vector2(0.95f, 1f);
+        keyObj.AddComponent<Outline>().effectColor = Color.black;
     }
 
     private static Slider CreatePristineVolumeSlider(string labelText, UnityEngine.Events.UnityAction<float> callback, Transform parent, float initialVal)
     {
-        // Container
         GameObject container = CreateUIElement(labelText + "_Container", parent);
         container.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 42);
 
         // Label
         GameObject labelObj = CreateUIElement("Label", container.transform);
+        RectTransform lblRect = labelObj.GetComponent<RectTransform>();
+        lblRect.anchorMin = new Vector2(0f, 0f);
+        lblRect.anchorMax = new Vector2(0.42f, 1f);
+        lblRect.offsetMin = new Vector2(10, 0);
+        lblRect.offsetMax = Vector2.zero;
+
         Text labelTextComp = labelObj.AddComponent<Text>();
         labelTextComp.text = labelText;
         labelTextComp.font = GetSafeFont();
         labelTextComp.fontSize = 17;
-        labelTextComp.color = new Color(0.92f, 0.88f, 1.0f);
+        labelTextComp.color = Color.white;
         labelTextComp.alignment = TextAnchor.MiddleLeft;
-        RectTransform lblRect = labelObj.GetComponent<RectTransform>();
-        lblRect.anchorMin = new Vector2(0.02f, 0);
-        lblRect.anchorMax = new Vector2(0.42f, 1);
+        labelObj.AddComponent<Outline>().effectColor = Color.black;
 
         // Slider Object
         GameObject sliderObj = CreateUIElement(labelText + "_Slider", container.transform);
         RectTransform sliderRect = sliderObj.GetComponent<RectTransform>();
-        sliderRect.anchorMin = new Vector2(0.44f, 0.3f);
-        sliderRect.anchorMax = new Vector2(0.98f, 0.7f);
+        sliderRect.anchorMin = new Vector2(0.44f, 0.2f);
+        sliderRect.anchorMax = new Vector2(1f, 0.8f);
+        sliderRect.offsetMin = Vector2.zero;
+        sliderRect.offsetMax = new Vector2(-10, 0);
 
         Slider slider = sliderObj.AddComponent<Slider>();
         slider.minValue = 0f;
@@ -371,7 +394,8 @@ public class MainMenuUIBuilder : MonoBehaviour
         RectTransform bgRect = bg.GetComponent<RectTransform>();
         bgRect.anchorMin = new Vector2(0, 0.35f);
         bgRect.anchorMax = new Vector2(1, 0.65f);
-        bgRect.sizeDelta = Vector2.zero;
+        bgRect.offsetMin = Vector2.zero;
+        bgRect.offsetMax = Vector2.zero;
         Image bgImg = bg.AddComponent<Image>();
         bgImg.color = new Color(0.15f, 0.08f, 0.25f, 0.8f);
 
@@ -380,14 +404,16 @@ public class MainMenuUIBuilder : MonoBehaviour
         RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
         fillAreaRect.anchorMin = new Vector2(0, 0.35f);
         fillAreaRect.anchorMax = new Vector2(1, 0.65f);
-        fillAreaRect.sizeDelta = Vector2.zero;
+        fillAreaRect.offsetMin = Vector2.zero;
+        fillAreaRect.offsetMax = Vector2.zero;
 
         // Fill
         GameObject fill = CreateUIElement("Fill", fillArea.transform);
         RectTransform fillRect = fill.GetComponent<RectTransform>();
         fillRect.anchorMin = Vector2.zero;
         fillRect.anchorMax = Vector2.one;
-        fillRect.sizeDelta = Vector2.zero;
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
         Image fillImg = fill.AddComponent<Image>();
         fillImg.color = new Color(0.85f, 0.45f, 1.0f, 1.0f);
 
@@ -396,14 +422,19 @@ public class MainMenuUIBuilder : MonoBehaviour
         RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
         handleAreaRect.anchorMin = Vector2.zero;
         handleAreaRect.anchorMax = Vector2.one;
-        handleAreaRect.sizeDelta = Vector2.zero;
+        handleAreaRect.offsetMin = new Vector2(10, 0);
+        handleAreaRect.offsetMax = new Vector2(-10, 0);
 
         // Handle (Knob)
         GameObject handle = CreateUIElement("Handle", handleArea.transform);
         RectTransform handleRect = handle.GetComponent<RectTransform>();
-        handleRect.sizeDelta = new Vector2(18, 18);
+        handleRect.anchorMin = new Vector2(0, 0);
+        handleRect.anchorMax = new Vector2(0, 1);
+        handleRect.pivot = new Vector2(0.5f, 0.5f);
+        handleRect.sizeDelta = new Vector2(18, 0);
+
         Image handleImg = handle.AddComponent<Image>();
-        handleImg.color = new Color(1.0f, 0.9f, 1.0f, 1.0f);
+        handleImg.color = Color.white;
 
         slider.targetGraphic = handleImg;
         slider.fillRect = fillRect;

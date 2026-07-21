@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 
-[ExecuteAlways]
 public class PauseMenuUIBuilder : MonoBehaviour
 {
     private static Font cachedFont;
@@ -12,9 +11,19 @@ public class PauseMenuUIBuilder : MonoBehaviour
     {
         if (cachedFont != null) return cachedFont;
 
-        cachedFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        if (cachedFont == null) cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (cachedFont == null) cachedFont = Font.CreateDynamicFontFromOSFont("Arial", 18);
+        try
+        {
+            cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        }
+        catch
+        {
+            cachedFont = null;
+        }
+
+        if (cachedFont == null)
+        {
+            cachedFont = Font.CreateDynamicFontFromOSFont("Arial", 18);
+        }
 
         return cachedFont;
     }
@@ -71,7 +80,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
             canvasObj = canvas.gameObject;
         }
 
-        // Pixel Art Galaxy Backdrop Overlay
+        // Backdrop Dark Overlay
         GameObject backdropObj = CreateUIElement("PauseBackdrop", canvasObj.transform);
         RectTransform bdRect = backdropObj.GetComponent<RectTransform>();
         StretchToFill(bdRect);
@@ -81,7 +90,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         if (galaxySprite != null)
         {
             bdImg.sprite = galaxySprite;
-            bdImg.color = new Color(0.55f, 0.45f, 0.65f, 0.92f); // Galaxy sprite with pause tint
+            bdImg.color = new Color(0.55f, 0.45f, 0.65f, 0.92f);
             bdImg.type = Image.Type.Simple;
             bdImg.preserveAspect = false;
         }
@@ -99,7 +108,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         cardRect.sizeDelta = new Vector2(460, 480);
 
         Image cardImg = pauseCardObj.AddComponent<Image>();
-        cardImg.color = new Color(0.04f, 0.02f, 0.1f, 0.82f);
+        cardImg.color = new Color(0.04f, 0.02f, 0.1f, 0.85f);
 
         VerticalLayoutGroup layout = pauseCardObj.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(30, 30, 30, 30);
@@ -115,8 +124,9 @@ public class PauseMenuUIBuilder : MonoBehaviour
         titleText.font = GetSafeFont();
         titleText.fontSize = 32;
         titleText.alignment = TextAnchor.MiddleCenter;
-        titleText.color = new Color(0.9f, 0.85f, 1.0f);
+        titleText.color = Color.white;
         titleText.fontStyle = FontStyle.Bold;
+        titleObj.AddComponent<Outline>().effectColor = Color.black;
         titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(400, 45);
 
         // Buttons
@@ -131,10 +141,10 @@ public class PauseMenuUIBuilder : MonoBehaviour
         soundRect.anchorMin = new Vector2(0.5f, 0.5f);
         soundRect.anchorMax = new Vector2(0.5f, 0.5f);
         soundRect.pivot = new Vector2(0.5f, 0.5f);
-        soundRect.sizeDelta = new Vector2(520, 480);
+        soundRect.sizeDelta = new Vector2(500, 480);
 
         Image soundImg = soundCardObj.AddComponent<Image>();
-        soundImg.color = new Color(0.04f, 0.02f, 0.1f, 0.82f);
+        soundImg.color = new Color(0.04f, 0.02f, 0.1f, 0.85f);
 
         VerticalLayoutGroup soundLayout = soundCardObj.AddComponent<VerticalLayoutGroup>();
         soundLayout.padding = new RectOffset(30, 30, 30, 30);
@@ -149,8 +159,9 @@ public class PauseMenuUIBuilder : MonoBehaviour
         soundTitleText.font = GetSafeFont();
         soundTitleText.fontSize = 28;
         soundTitleText.alignment = TextAnchor.MiddleCenter;
-        soundTitleText.color = new Color(0.9f, 0.85f, 1.0f);
+        soundTitleText.color = Color.white;
         soundTitleText.fontStyle = FontStyle.Bold;
+        soundTitle.AddComponent<Outline>().effectColor = Color.black;
         soundTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 45);
 
         Slider masterSlider = CreatePristineVolumeSlider("Master Volume", manager != null ? manager.SetMasterVolume : null, soundCardObj.transform, SettingsManager.Instance != null ? SettingsManager.Instance.MasterVolume : 1.0f);
@@ -182,16 +193,16 @@ public class PauseMenuUIBuilder : MonoBehaviour
     private static Button CreateRefButton(string name, string text, Transform parent, UnityEngine.Events.UnityAction action)
     {
         GameObject btnObj = CreateUIElement(name, parent);
-        btnObj.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 48);
+        btnObj.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 50);
 
         Image btnImg = btnObj.AddComponent<Image>();
-        btnImg.color = new Color(0.2f, 0.1f, 0.35f, 0.35f);
+        btnImg.color = new Color(0.2f, 0.1f, 0.35f, 0.45f);
 
         Button btn = btnObj.AddComponent<Button>();
 
         ColorBlock colors = btn.colors;
-        colors.normalColor = new Color(0.2f, 0.1f, 0.35f, 0.35f);
-        colors.highlightedColor = new Color(0.5f, 0.25f, 0.7f, 0.7f);
+        colors.normalColor = new Color(0.2f, 0.1f, 0.35f, 0.45f);
+        colors.highlightedColor = new Color(0.5f, 0.25f, 0.75f, 0.8f);
         colors.pressedColor = new Color(0.85f, 0.45f, 1.0f, 0.95f);
         btn.colors = colors;
 
@@ -201,7 +212,8 @@ public class PauseMenuUIBuilder : MonoBehaviour
         btnText.font = GetSafeFont();
         btnText.fontSize = 22;
         btnText.alignment = TextAnchor.MiddleCenter;
-        btnText.color = new Color(0.92f, 0.88f, 1.0f);
+        btnText.color = Color.white;
+        txtObj.AddComponent<Outline>().effectColor = Color.black;
 
         StretchToFill(txtObj.GetComponent<RectTransform>());
 
@@ -218,60 +230,81 @@ public class PauseMenuUIBuilder : MonoBehaviour
         GameObject container = CreateUIElement(labelText + "_Container", parent);
         container.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 42);
 
+        // Label
         GameObject labelObj = CreateUIElement("Label", container.transform);
+        RectTransform lblRect = labelObj.GetComponent<RectTransform>();
+        lblRect.anchorMin = new Vector2(0f, 0f);
+        lblRect.anchorMax = new Vector2(0.42f, 1f);
+        lblRect.offsetMin = new Vector2(10, 0);
+        lblRect.offsetMax = Vector2.zero;
+
         Text labelTextComp = labelObj.AddComponent<Text>();
         labelTextComp.text = labelText;
         labelTextComp.font = GetSafeFont();
         labelTextComp.fontSize = 17;
-        labelTextComp.color = new Color(0.92f, 0.88f, 1.0f);
+        labelTextComp.color = Color.white;
         labelTextComp.alignment = TextAnchor.MiddleLeft;
-        RectTransform lblRect = labelObj.GetComponent<RectTransform>();
-        lblRect.anchorMin = new Vector2(0.02f, 0);
-        lblRect.anchorMax = new Vector2(0.42f, 1);
+        labelObj.AddComponent<Outline>().effectColor = Color.black;
 
+        // Slider Object
         GameObject sliderObj = CreateUIElement(labelText + "_Slider", container.transform);
         RectTransform sliderRect = sliderObj.GetComponent<RectTransform>();
-        sliderRect.anchorMin = new Vector2(0.44f, 0.3f);
-        sliderRect.anchorMax = new Vector2(0.98f, 0.7f);
+        sliderRect.anchorMin = new Vector2(0.44f, 0.2f);
+        sliderRect.anchorMax = new Vector2(1f, 0.8f);
+        sliderRect.offsetMin = Vector2.zero;
+        sliderRect.offsetMax = new Vector2(-10, 0);
 
         Slider slider = sliderObj.AddComponent<Slider>();
         slider.minValue = 0f;
         slider.maxValue = 1f;
         slider.value = initialVal;
 
+        // Background Bar
         GameObject bg = CreateUIElement("Background", sliderObj.transform);
         RectTransform bgRect = bg.GetComponent<RectTransform>();
         bgRect.anchorMin = new Vector2(0, 0.35f);
         bgRect.anchorMax = new Vector2(1, 0.65f);
-        bgRect.sizeDelta = Vector2.zero;
+        bgRect.offsetMin = Vector2.zero;
+        bgRect.offsetMax = Vector2.zero;
         Image bgImg = bg.AddComponent<Image>();
         bgImg.color = new Color(0.15f, 0.08f, 0.25f, 0.8f);
 
+        // Fill Area
         GameObject fillArea = CreateUIElement("Fill Area", sliderObj.transform);
         RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
         fillAreaRect.anchorMin = new Vector2(0, 0.35f);
         fillAreaRect.anchorMax = new Vector2(1, 0.65f);
-        fillAreaRect.sizeDelta = Vector2.zero;
+        fillAreaRect.offsetMin = Vector2.zero;
+        fillAreaRect.offsetMax = Vector2.zero;
 
+        // Fill
         GameObject fill = CreateUIElement("Fill", fillArea.transform);
         RectTransform fillRect = fill.GetComponent<RectTransform>();
         fillRect.anchorMin = Vector2.zero;
         fillRect.anchorMax = Vector2.one;
-        fillRect.sizeDelta = Vector2.zero;
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
         Image fillImg = fill.AddComponent<Image>();
         fillImg.color = new Color(0.85f, 0.45f, 1.0f, 1.0f);
 
+        // Handle Slide Area
         GameObject handleArea = CreateUIElement("Handle Slide Area", sliderObj.transform);
         RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
         handleAreaRect.anchorMin = Vector2.zero;
         handleAreaRect.anchorMax = Vector2.one;
-        handleAreaRect.sizeDelta = Vector2.zero;
+        handleAreaRect.offsetMin = new Vector2(10, 0);
+        handleAreaRect.offsetMax = new Vector2(-10, 0);
 
+        // Handle (Knob)
         GameObject handle = CreateUIElement("Handle", handleArea.transform);
         RectTransform handleRect = handle.GetComponent<RectTransform>();
-        handleRect.sizeDelta = new Vector2(18, 18);
+        handleRect.anchorMin = new Vector2(0, 0);
+        handleRect.anchorMax = new Vector2(0, 1);
+        handleRect.pivot = new Vector2(0.5f, 0.5f);
+        handleRect.sizeDelta = new Vector2(18, 0);
+
         Image handleImg = handle.AddComponent<Image>();
-        handleImg.color = new Color(1.0f, 0.9f, 1.0f, 1.0f);
+        handleImg.color = Color.white;
 
         slider.targetGraphic = handleImg;
         slider.fillRect = fillRect;
