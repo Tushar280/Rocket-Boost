@@ -72,7 +72,7 @@ public class MainMenuUIBuilder : MonoBehaviour
 
     public static void EnsureUI(MainMenuManager manager)
     {
-        // 1. EventSystem
+        // 1. EventSystem & Input Module Setup
         EventSystem eventSys = FindObjectOfType<EventSystem>();
         GameObject eventSystemObj;
 
@@ -96,10 +96,15 @@ public class MainMenuUIBuilder : MonoBehaviour
         InputSystemUIInputModule inputModule = eventSystemObj.GetComponent<InputSystemUIInputModule>();
         if (inputModule == null)
         {
-            eventSystemObj.AddComponent<InputSystemUIInputModule>();
+            inputModule = eventSystemObj.AddComponent<InputSystemUIInputModule>();
         }
 
-        // 2. Canvas
+        if (inputModule != null)
+        {
+            inputModule.AssignDefaultActions();
+        }
+
+        // 2. Canvas & GraphicRaycaster
         Canvas canvas = FindObjectOfType<Canvas>();
         GameObject canvasObj;
 
@@ -119,12 +124,30 @@ public class MainMenuUIBuilder : MonoBehaviour
         else
         {
             canvasObj = canvas.gameObject;
+            if (canvasObj.GetComponent<GraphicRaycaster>() == null)
+            {
+                canvasObj.AddComponent<GraphicRaycaster>();
+            }
         }
+
+        // Cleanup any old instances before rebuilding to prevent input overlap
+        Transform oldBg = canvasObj.transform.Find("SpaceBackground");
+        if (oldBg != null) { if (Application.isPlaying) Destroy(oldBg.gameObject); else DestroyImmediate(oldBg.gameObject); }
+
+        Transform oldMain = canvasObj.transform.Find("MainPanel");
+        if (oldMain != null) { if (Application.isPlaying) Destroy(oldMain.gameObject); else DestroyImmediate(oldMain.gameObject); }
+
+        Transform oldCtrl = canvasObj.transform.Find("ControlsPanel");
+        if (oldCtrl != null) { if (Application.isPlaying) Destroy(oldCtrl.gameObject); else DestroyImmediate(oldCtrl.gameObject); }
+
+        Transform oldOpt = canvasObj.transform.Find("OptionsPanel");
+        if (oldOpt != null) { if (Application.isPlaying) Destroy(oldOpt.gameObject); else DestroyImmediate(oldOpt.gameObject); }
 
         // 3. Pixel Art Galaxy Background (Fullscreen)
         GameObject bgObj = CreateUIElement("SpaceBackground", canvasObj.transform);
         StretchToFill(bgObj.GetComponent<RectTransform>());
         Image bgImg = bgObj.AddComponent<Image>();
+        bgImg.raycastTarget = false; // Background should never intercept button raycasts
 
         Sprite galaxySprite = GetGalaxySprite();
         if (galaxySprite != null)
@@ -149,6 +172,7 @@ public class MainMenuUIBuilder : MonoBehaviour
 
         Image cardBg = menuCardObj.AddComponent<Image>();
         cardBg.color = new Color(0.05f, 0.02f, 0.12f, 0.55f);
+        cardBg.raycastTarget = false;
 
         VerticalLayoutGroup cardLayout = menuCardObj.AddComponent<VerticalLayoutGroup>();
         cardLayout.padding = new RectOffset(25, 25, 25, 25);
@@ -166,6 +190,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         titleText.alignment = TextAnchor.MiddleCenter;
         titleText.color = Color.white;
         titleText.fontStyle = FontStyle.Bold;
+        titleText.raycastTarget = false;
         titleObj.AddComponent<Outline>().effectColor = new Color(0.1f, 0f, 0.2f, 0.9f);
         titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(430, 55);
 
@@ -177,6 +202,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         subText.fontSize = 15;
         subText.alignment = TextAnchor.MiddleCenter;
         subText.color = new Color(0.85f, 0.75f, 1.0f);
+        subText.raycastTarget = false;
         subObj.AddComponent<Outline>().effectColor = new Color(0, 0, 0, 0.8f);
         subObj.GetComponent<RectTransform>().sizeDelta = new Vector2(430, 25);
 
@@ -196,6 +222,7 @@ public class MainMenuUIBuilder : MonoBehaviour
 
         Image controlsImg = controlsCardObj.AddComponent<Image>();
         controlsImg.color = new Color(0.04f, 0.02f, 0.1f, 0.92f);
+        controlsImg.raycastTarget = false;
 
         VerticalLayoutGroup controlsLayout = controlsCardObj.AddComponent<VerticalLayoutGroup>();
         controlsLayout.padding = new RectOffset(30, 30, 30, 30);
@@ -212,6 +239,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         ctrlTitleText.alignment = TextAnchor.MiddleCenter;
         ctrlTitleText.color = Color.white;
         ctrlTitleText.fontStyle = FontStyle.Bold;
+        ctrlTitleText.raycastTarget = false;
         ctrlTitle.AddComponent<Outline>().effectColor = Color.black;
         ctrlTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 45);
 
@@ -232,6 +260,7 @@ public class MainMenuUIBuilder : MonoBehaviour
 
         Image optionsImg = optionsCardObj.AddComponent<Image>();
         optionsImg.color = new Color(0.04f, 0.02f, 0.1f, 0.92f);
+        optionsImg.raycastTarget = false;
 
         VerticalLayoutGroup optionsLayout = optionsCardObj.AddComponent<VerticalLayoutGroup>();
         optionsLayout.padding = new RectOffset(30, 30, 30, 30);
@@ -248,6 +277,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         optTitleText.alignment = TextAnchor.MiddleCenter;
         optTitleText.color = Color.white;
         optTitleText.fontStyle = FontStyle.Bold;
+        optTitleText.raycastTarget = false;
         optTitle.AddComponent<Outline>().effectColor = Color.black;
         optTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 45);
 
@@ -287,13 +317,17 @@ public class MainMenuUIBuilder : MonoBehaviour
 
         Image btnImg = btnObj.AddComponent<Image>();
         btnImg.color = new Color(0.2f, 0.1f, 0.35f, 0.5f);
+        btnImg.raycastTarget = true;
 
         Button btn = btnObj.AddComponent<Button>();
+        btn.targetGraphic = btnImg;
 
         ColorBlock colors = btn.colors;
         colors.normalColor = new Color(0.2f, 0.1f, 0.35f, 0.5f);
         colors.highlightedColor = new Color(0.5f, 0.25f, 0.75f, 0.85f);
         colors.pressedColor = new Color(0.85f, 0.45f, 1.0f, 1.0f);
+        colors.selectedColor = new Color(0.5f, 0.25f, 0.75f, 0.85f);
+        colors.disabledColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
         btn.colors = colors;
 
         GameObject txtObj = CreateUIElement(name + "_Text", btnObj.transform);
@@ -303,6 +337,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         btnText.fontSize = 24;
         btnText.alignment = TextAnchor.MiddleCenter;
         btnText.color = Color.white;
+        btnText.raycastTarget = false;
         txtObj.AddComponent<Outline>().effectColor = Color.black;
 
         StretchToFill(txtObj.GetComponent<RectTransform>());
@@ -322,6 +357,7 @@ public class MainMenuUIBuilder : MonoBehaviour
 
         Image rowImg = row.AddComponent<Image>();
         rowImg.color = new Color(0.18f, 0.08f, 0.28f, 0.5f);
+        rowImg.raycastTarget = false;
 
         GameObject labelObj = CreateUIElement("Label", row.transform);
         RectTransform lblRect = labelObj.GetComponent<RectTransform>();
@@ -336,6 +372,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         labelText.fontSize = 17;
         labelText.color = Color.white;
         labelText.alignment = TextAnchor.MiddleLeft;
+        labelText.raycastTarget = false;
         labelObj.AddComponent<Outline>().effectColor = Color.black;
 
         GameObject keyObj = CreateUIElement("Key", row.transform);
@@ -352,6 +389,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         keyText.fontStyle = FontStyle.Bold;
         keyText.color = new Color(0.85f, 0.45f, 1.0f);
         keyText.alignment = TextAnchor.MiddleRight;
+        keyText.raycastTarget = false;
         keyObj.AddComponent<Outline>().effectColor = Color.black;
     }
 
@@ -374,6 +412,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         labelTextComp.fontSize = 17;
         labelTextComp.color = Color.white;
         labelTextComp.alignment = TextAnchor.MiddleLeft;
+        labelTextComp.raycastTarget = false;
         labelObj.AddComponent<Outline>().effectColor = Color.black;
 
         // Slider Object
@@ -398,6 +437,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         bgRect.offsetMax = Vector2.zero;
         Image bgImg = bg.AddComponent<Image>();
         bgImg.color = new Color(0.15f, 0.08f, 0.25f, 0.8f);
+        bgImg.raycastTarget = false;
 
         // Fill Area
         GameObject fillArea = CreateUIElement("Fill Area", sliderObj.transform);
@@ -416,6 +456,7 @@ public class MainMenuUIBuilder : MonoBehaviour
         fillRect.offsetMax = Vector2.zero;
         Image fillImg = fill.AddComponent<Image>();
         fillImg.color = new Color(0.85f, 0.45f, 1.0f, 1.0f);
+        fillImg.raycastTarget = false;
 
         // Handle Slide Area
         GameObject handleArea = CreateUIElement("Handle Slide Area", sliderObj.transform);
@@ -435,6 +476,7 @@ public class MainMenuUIBuilder : MonoBehaviour
 
         Image handleImg = handle.AddComponent<Image>();
         handleImg.color = Color.white;
+        handleImg.raycastTarget = true;
 
         slider.targetGraphic = handleImg;
         slider.fillRect = fillRect;

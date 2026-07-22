@@ -34,6 +34,11 @@ public class MainMenuManager : MonoBehaviour
 
     private void Start()
     {
+        // Restore time scale and cursor state for standalone build
+        Time.timeScale = 1.0f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         // Show Main Panel by default
         ShowMainPanel();
 
@@ -57,18 +62,53 @@ public class MainMenuManager : MonoBehaviour
     public void PlayGame()
     {
         Time.timeScale = 1.0f;
-        if (loadByBuildIndex)
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        try
         {
-            SceneManager.LoadScene(firstLevelBuildIndex);
+            if (loadByBuildIndex)
+            {
+                if (firstLevelBuildIndex < SceneManager.sceneCountInBuildSettings)
+                {
+                    SceneManager.LoadScene(firstLevelBuildIndex);
+                }
+                else if (SceneManager.sceneCountInBuildSettings > 1)
+                {
+                    SceneManager.LoadScene(1);
+                }
+            }
+            else
+            {
+                if (Application.CanStreamedLevelBeLoaded(firstLevelName))
+                {
+                    SceneManager.LoadScene(firstLevelName);
+                }
+                else if (SceneManager.sceneCountInBuildSettings > 1)
+                {
+                    SceneManager.LoadScene(1);
+                }
+                else
+                {
+                    SceneManager.LoadScene(firstLevelName);
+                }
+            }
         }
-        else
+        catch (System.Exception ex)
         {
-            SceneManager.LoadScene(firstLevelName);
+            Debug.LogWarning($"[MainMenuManager] Failed to load level by name '{firstLevelName}': {ex.Message}. Falling back to build index 1.");
+            if (SceneManager.sceneCountInBuildSettings > 1)
+            {
+                SceneManager.LoadScene(1);
+            }
         }
     }
 
     public void ShowMainPanel()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         if (mainPanel != null) mainPanel.SetActive(true);
         if (controlsPanel != null) controlsPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(false);

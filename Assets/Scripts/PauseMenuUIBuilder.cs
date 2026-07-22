@@ -30,7 +30,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
 
     public static void EnsureUI(PauseMenuManager manager)
     {
-        // 1. EventSystem
+        // 1. EventSystem & Input Module Setup
         EventSystem eventSys = FindObjectOfType<EventSystem>();
         GameObject eventSystemObj;
 
@@ -54,10 +54,15 @@ public class PauseMenuUIBuilder : MonoBehaviour
         InputSystemUIInputModule inputModule = eventSystemObj.GetComponent<InputSystemUIInputModule>();
         if (inputModule == null)
         {
-            eventSystemObj.AddComponent<InputSystemUIInputModule>();
+            inputModule = eventSystemObj.AddComponent<InputSystemUIInputModule>();
         }
 
-        // 2. Canvas
+        if (inputModule != null)
+        {
+            inputModule.AssignDefaultActions();
+        }
+
+        // 2. Canvas & GraphicRaycaster
         Canvas canvas = FindObjectOfType<Canvas>();
         GameObject canvasObj;
 
@@ -78,13 +83,22 @@ public class PauseMenuUIBuilder : MonoBehaviour
         else
         {
             canvasObj = canvas.gameObject;
+            if (canvasObj.GetComponent<GraphicRaycaster>() == null)
+            {
+                canvasObj.AddComponent<GraphicRaycaster>();
+            }
         }
+
+        // Cleanup old PauseBackdrop if present
+        Transform oldBackdrop = canvasObj.transform.Find("PauseBackdrop");
+        if (oldBackdrop != null) { if (Application.isPlaying) Destroy(oldBackdrop.gameObject); else DestroyImmediate(oldBackdrop.gameObject); }
 
         // Backdrop Dark Overlay
         GameObject backdropObj = CreateUIElement("PauseBackdrop", canvasObj.transform);
         RectTransform bdRect = backdropObj.GetComponent<RectTransform>();
         StretchToFill(bdRect);
         Image bdImg = backdropObj.AddComponent<Image>();
+        bdImg.raycastTarget = false;
 
         Sprite galaxySprite = MainMenuUIBuilder.GetGalaxySprite();
         if (galaxySprite != null)
@@ -109,6 +123,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
 
         Image cardImg = pauseCardObj.AddComponent<Image>();
         cardImg.color = new Color(0.04f, 0.02f, 0.1f, 0.85f);
+        cardImg.raycastTarget = false;
 
         VerticalLayoutGroup layout = pauseCardObj.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(30, 30, 30, 30);
@@ -126,6 +141,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         titleText.alignment = TextAnchor.MiddleCenter;
         titleText.color = Color.white;
         titleText.fontStyle = FontStyle.Bold;
+        titleText.raycastTarget = false;
         titleObj.AddComponent<Outline>().effectColor = Color.black;
         titleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(400, 45);
 
@@ -145,6 +161,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
 
         Image soundImg = soundCardObj.AddComponent<Image>();
         soundImg.color = new Color(0.04f, 0.02f, 0.1f, 0.85f);
+        soundImg.raycastTarget = false;
 
         VerticalLayoutGroup soundLayout = soundCardObj.AddComponent<VerticalLayoutGroup>();
         soundLayout.padding = new RectOffset(30, 30, 30, 30);
@@ -161,6 +178,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         soundTitleText.alignment = TextAnchor.MiddleCenter;
         soundTitleText.color = Color.white;
         soundTitleText.fontStyle = FontStyle.Bold;
+        soundTitleText.raycastTarget = false;
         soundTitle.AddComponent<Outline>().effectColor = Color.black;
         soundTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(440, 45);
 
@@ -197,13 +215,17 @@ public class PauseMenuUIBuilder : MonoBehaviour
 
         Image btnImg = btnObj.AddComponent<Image>();
         btnImg.color = new Color(0.2f, 0.1f, 0.35f, 0.45f);
+        btnImg.raycastTarget = true;
 
         Button btn = btnObj.AddComponent<Button>();
+        btn.targetGraphic = btnImg;
 
         ColorBlock colors = btn.colors;
         colors.normalColor = new Color(0.2f, 0.1f, 0.35f, 0.45f);
         colors.highlightedColor = new Color(0.5f, 0.25f, 0.75f, 0.8f);
         colors.pressedColor = new Color(0.85f, 0.45f, 1.0f, 0.95f);
+        colors.selectedColor = new Color(0.5f, 0.25f, 0.75f, 0.8f);
+        colors.disabledColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
         btn.colors = colors;
 
         GameObject txtObj = CreateUIElement(name + "_Text", btnObj.transform);
@@ -213,6 +235,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         btnText.fontSize = 22;
         btnText.alignment = TextAnchor.MiddleCenter;
         btnText.color = Color.white;
+        btnText.raycastTarget = false;
         txtObj.AddComponent<Outline>().effectColor = Color.black;
 
         StretchToFill(txtObj.GetComponent<RectTransform>());
@@ -244,6 +267,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         labelTextComp.fontSize = 17;
         labelTextComp.color = Color.white;
         labelTextComp.alignment = TextAnchor.MiddleLeft;
+        labelTextComp.raycastTarget = false;
         labelObj.AddComponent<Outline>().effectColor = Color.black;
 
         // Slider Object
@@ -268,6 +292,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         bgRect.offsetMax = Vector2.zero;
         Image bgImg = bg.AddComponent<Image>();
         bgImg.color = new Color(0.15f, 0.08f, 0.25f, 0.8f);
+        bgImg.raycastTarget = false;
 
         // Fill Area
         GameObject fillArea = CreateUIElement("Fill Area", sliderObj.transform);
@@ -286,6 +311,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
         fillRect.offsetMax = Vector2.zero;
         Image fillImg = fill.AddComponent<Image>();
         fillImg.color = new Color(0.85f, 0.45f, 1.0f, 1.0f);
+        fillImg.raycastTarget = false;
 
         // Handle Slide Area
         GameObject handleArea = CreateUIElement("Handle Slide Area", sliderObj.transform);
@@ -305,6 +331,7 @@ public class PauseMenuUIBuilder : MonoBehaviour
 
         Image handleImg = handle.AddComponent<Image>();
         handleImg.color = Color.white;
+        handleImg.raycastTarget = true;
 
         slider.targetGraphic = handleImg;
         slider.fillRect = fillRect;

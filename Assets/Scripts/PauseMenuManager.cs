@@ -99,6 +99,8 @@ public class PauseMenuManager : MonoBehaviour
     {
         IsPaused = true;
         Time.timeScale = 0.0f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
         if (pauseMenuPanel == null)
         {
@@ -134,6 +136,9 @@ public class PauseMenuManager : MonoBehaviour
 
     public void OpenSoundOptions()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
         if (soundOptionsPanel != null) soundOptionsPanel.SetActive(true);
 
@@ -150,14 +155,31 @@ public class PauseMenuManager : MonoBehaviour
     {
         Time.timeScale = 1.0f; // Restore normal time scale before scene change
         IsPaused = false;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
-        if (loadByBuildIndex)
+        try
         {
-            SceneManager.LoadScene(mainMenuBuildIndex);
+            if (loadByBuildIndex)
+            {
+                SceneManager.LoadScene(mainMenuBuildIndex);
+            }
+            else
+            {
+                if (Application.CanStreamedLevelBeLoaded(mainMenuSceneName))
+                {
+                    SceneManager.LoadScene(mainMenuSceneName);
+                }
+                else
+                {
+                    SceneManager.LoadScene(0);
+                }
+            }
         }
-        else
+        catch (System.Exception ex)
         {
-            SceneManager.LoadScene(mainMenuSceneName);
+            Debug.LogWarning($"[PauseMenuManager] Failed to load main menu scene: {ex.Message}. Loading build index 0.");
+            SceneManager.LoadScene(0);
         }
     }
 

@@ -148,6 +148,9 @@ public class LevelHUDManager : MonoBehaviour
     public void ShowLevelCompleteMenu()
     {
         EnsureUIBuilt();
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         if (hudCanvasObj != null) hudCanvasObj.SetActive(true);
         if (levelTitleObj != null) levelTitleObj.SetActive(false);
 
@@ -198,6 +201,8 @@ public class LevelHUDManager : MonoBehaviour
     public void ExitToMainMenu()
     {
         Time.timeScale = 1.0f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         SceneManager.LoadScene(0); // 0MainMenu
     }
 
@@ -213,15 +218,39 @@ public class LevelHUDManager : MonoBehaviour
 
     private void EnsureUIBuilt()
     {
-        // 1. Ensure EventSystem
-        if (FindObjectOfType<EventSystem>() == null)
+        // 1. Ensure EventSystem & Input Module Setup
+        EventSystem eventSys = FindObjectOfType<EventSystem>();
+        GameObject eventSystemObj;
+
+        if (eventSys == null)
         {
-            GameObject eventSystemObj = new GameObject("EventSystem");
-            eventSystemObj.AddComponent<EventSystem>();
-            eventSystemObj.AddComponent<InputSystemUIInputModule>();
+            eventSystemObj = new GameObject("EventSystem");
+            eventSys = eventSystemObj.AddComponent<EventSystem>();
+        }
+        else
+        {
+            eventSystemObj = eventSys.gameObject;
         }
 
-        // 2. Ensure Canvas
+        StandaloneInputModule legacyModule = eventSystemObj.GetComponent<StandaloneInputModule>();
+        if (legacyModule != null)
+        {
+            if (Application.isPlaying) Destroy(legacyModule);
+            else DestroyImmediate(legacyModule);
+        }
+
+        InputSystemUIInputModule inputModule = eventSystemObj.GetComponent<InputSystemUIInputModule>();
+        if (inputModule == null)
+        {
+            inputModule = eventSystemObj.AddComponent<InputSystemUIInputModule>();
+        }
+
+        if (inputModule != null)
+        {
+            inputModule.AssignDefaultActions();
+        }
+
+        // 2. Ensure Canvas & GraphicRaycaster
         if (hudCanvasObj == null)
         {
             hudCanvasObj = new GameObject("HUDCanvas");
@@ -237,6 +266,13 @@ public class LevelHUDManager : MonoBehaviour
             scaler.matchWidthOrHeight = 0.5f;
 
             hudCanvasObj.AddComponent<GraphicRaycaster>();
+        }
+        else
+        {
+            if (hudCanvasObj.GetComponent<GraphicRaycaster>() == null)
+            {
+                hudCanvasObj.AddComponent<GraphicRaycaster>();
+            }
         }
 
         // 3. Center Screen Level Title Text
@@ -255,6 +291,7 @@ public class LevelHUDManager : MonoBehaviour
             levelTitleText.alignment = TextAnchor.MiddleCenter;
             levelTitleText.color = Color.white;
             levelTitleText.fontStyle = FontStyle.Bold;
+            levelTitleText.raycastTarget = false;
 
             Outline outline = levelTitleObj.AddComponent<Outline>();
             outline.effectColor = new Color(0.1f, 0.0f, 0.25f, 0.95f);
@@ -273,6 +310,7 @@ public class LevelHUDManager : MonoBehaviour
 
             Image cardBg = levelCompletePanel.AddComponent<Image>();
             cardBg.color = new Color(0.05f, 0.02f, 0.12f, 0.92f);
+            cardBg.raycastTarget = false;
 
             VerticalLayoutGroup layout = levelCompletePanel.AddComponent<VerticalLayoutGroup>();
             layout.padding = new RectOffset(30, 30, 30, 30);
@@ -290,6 +328,7 @@ public class LevelHUDManager : MonoBehaviour
             winTitleText.alignment = TextAnchor.MiddleCenter;
             winTitleText.color = new Color(0.85f, 0.45f, 1.0f);
             winTitleText.fontStyle = FontStyle.Bold;
+            winTitleText.raycastTarget = false;
             winTitleObj.AddComponent<Outline>().effectColor = Color.black;
             winTitleObj.GetComponent<RectTransform>().sizeDelta = new Vector2(460, 50);
 
@@ -301,6 +340,7 @@ public class LevelHUDManager : MonoBehaviour
             winSubText.fontSize = 16;
             winSubText.alignment = TextAnchor.MiddleCenter;
             winSubText.color = new Color(0.9f, 0.9f, 1.0f);
+            winSubText.raycastTarget = false;
             winSubObj.GetComponent<RectTransform>().sizeDelta = new Vector2(460, 25);
 
             // Buttons
@@ -327,13 +367,17 @@ public class LevelHUDManager : MonoBehaviour
 
         Image btnImg = btnObj.AddComponent<Image>();
         btnImg.color = new Color(0.25f, 0.12f, 0.4f, 0.75f);
+        btnImg.raycastTarget = true;
 
         Button btn = btnObj.AddComponent<Button>();
+        btn.targetGraphic = btnImg;
 
         ColorBlock colors = btn.colors;
         colors.normalColor = new Color(0.25f, 0.12f, 0.4f, 0.75f);
         colors.highlightedColor = new Color(0.55f, 0.25f, 0.85f, 0.9f);
         colors.pressedColor = new Color(0.85f, 0.45f, 1.0f, 1.0f);
+        colors.selectedColor = new Color(0.55f, 0.25f, 0.85f, 0.9f);
+        colors.disabledColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
         btn.colors = colors;
 
         GameObject txtObj = CreateUIElement(name + "_Text", btnObj.transform);
@@ -343,6 +387,7 @@ public class LevelHUDManager : MonoBehaviour
         btnText.fontSize = 22;
         btnText.alignment = TextAnchor.MiddleCenter;
         btnText.color = Color.white;
+        btnText.raycastTarget = false;
         txtObj.AddComponent<Outline>().effectColor = Color.black;
 
         RectTransform txtRect = txtObj.GetComponent<RectTransform>();
