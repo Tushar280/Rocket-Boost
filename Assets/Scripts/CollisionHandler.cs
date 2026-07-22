@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.InputSystem;
 
 public class CollisionHandler : MonoBehaviour
 {
@@ -14,7 +13,7 @@ public class CollisionHandler : MonoBehaviour
     [SerializeField] private ParticleSystem vfxCrash;
     [SerializeField] private ParticleSystem vfxLanding;
 
-    [SerializeField] float delay = 1.5f;
+    [SerializeField] float delay = 1.2f;
 
     private void Start()
     {
@@ -48,22 +47,36 @@ public class CollisionHandler : MonoBehaviour
         }
     }
 
-    private void ReloadScene()
+    private void TriggerGameOverUI()
     {
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(currentSceneIndex);
+        LevelHUDManager hud = LevelHUDManager.EnsureInstance();
+        if (hud != null)
+        {
+            hud.ShowGameOverMenu();
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
-    private void LoadNextLevel()
+    private void TriggerLevelCompleteUI()
     {
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        int nextSceneIndex = currentSceneIndex + 1;
-        if (nextSceneIndex == SceneManager.sceneCountInBuildSettings)
+        LevelHUDManager hud = LevelHUDManager.EnsureInstance();
+        if (hud != null)
         {
-            nextSceneIndex = 0;
+            hud.ShowLevelCompleteMenu();
         }
-
-        SceneManager.LoadScene(nextSceneIndex);
+        else
+        {
+            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+            int nextSceneIndex = currentSceneIndex + 1;
+            if (nextSceneIndex >= SceneManager.sceneCountInBuildSettings)
+            {
+                nextSceneIndex = 0;
+            }
+            SceneManager.LoadScene(nextSceneIndex);
+        }
     }
 
     private void GameOver()
@@ -82,7 +95,7 @@ public class CollisionHandler : MonoBehaviour
 
         isCrashed = true;
         if (vfxCrash != null) vfxCrash.Play();
-        Invoke("ReloadScene", delay);
+        Invoke("TriggerGameOverUI", delay);
 
         Movement mv = GetComponent<Movement>();
         if (mv != null) mv.enabled = false;
@@ -108,14 +121,6 @@ public class CollisionHandler : MonoBehaviour
         Movement mv = GetComponent<Movement>();
         if (mv != null) mv.enabled = false;
 
-        LevelHUDManager hud = LevelHUDManager.EnsureInstance();
-        if (hud != null)
-        {
-            hud.ShowLevelCompleteMenu();
-        }
-        else
-        {
-            Invoke("LoadNextLevel", delay);
-        }
+        Invoke("TriggerLevelCompleteUI", delay);
     }
 }
