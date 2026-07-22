@@ -1,222 +1,195 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class MainMenuManager : MonoBehaviour
 {
-    [Header("UI Panels")]
-    [SerializeField] private GameObject mainPanel;
-    [SerializeField] private GameObject controlsPanel;
-    [SerializeField] private GameObject optionsPanel;
-    [SerializeField] private GameObject soundSettingsSubPanel;
-    [SerializeField] private GameObject graphicsSettingsSubPanel;
+    [Header("Panels")]
+    [SerializeField] public GameObject mainPanel;
+    [SerializeField] public GameObject levelSelectPanel;
+    [SerializeField] public GameObject controlsPanel;
+    [SerializeField] public GameObject optionsPanel;
 
-    [Header("Level Loading")]
-    [SerializeField] private string firstLevelName = "1Mercury";
-    [SerializeField] private int firstLevelBuildIndex = 1;
-    [SerializeField] private bool loadByBuildIndex = false;
+    [Header("Options UI Sliders")]
+    [SerializeField] public Slider masterVolumeSlider;
+    [SerializeField] public Slider musicVolumeSlider;
+    [SerializeField] public Slider sfxVolumeSlider;
 
-    [Header("Sound Controls (Optional UI Wiring)")]
-    [SerializeField] private Slider masterVolumeSlider;
-    [SerializeField] private Slider musicVolumeSlider;
-    [SerializeField] private Slider sfxVolumeSlider;
+    [Header("Level Buttons")]
+    [SerializeField] public List<Button> levelButtons = new List<Button>();
 
-    [Header("Graphics Controls (Optional UI Wiring)")]
-    [SerializeField] private Toggle fullscreenToggle;
-
-    private void Awake()
-    {
-        if (mainPanel == null)
-        {
-            MainMenuUIBuilder.EnsureUI(this);
-        }
-    }
+    public const string UNLOCKED_LEVEL_KEY = "UnlockedLevelIndex";
 
     private void Start()
     {
-        // Restore time scale and cursor state for standalone build
-        Time.timeScale = 1.0f;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        // Show Main Panel by default
+        SettingsManager.EnsureInstance();
         ShowMainPanel();
-
-        // Initialize UI controls with saved settings
-        InitializeUIValues();
+        InitOptionsSliders();
+        RefreshLevelButtons();
     }
 
-    private void InitializeUIValues()
+    public static int GetUnlockedLevelIndex()
     {
-        if (SettingsManager.Instance != null)
+        return PlayerPrefs.GetInt(UNLOCKED_LEVEL_KEY, 1);
+    }
+
+    public static void UnlockNextLevel(int completedLevelIndex)
+    {
+        int currentUnlocked = GetUnlockedLevelIndex();
+        if (completedLevelIndex + 1 > currentUnlocked)
         {
-            if (masterVolumeSlider != null) masterVolumeSlider.value = SettingsManager.Instance.MasterVolume;
-            if (musicVolumeSlider != null) musicVolumeSlider.value = SettingsManager.Instance.MusicVolume;
-            if (sfxVolumeSlider != null) sfxVolumeSlider.value = SettingsManager.Instance.SFXVolume;
-            if (fullscreenToggle != null) fullscreenToggle.isOn = SettingsManager.Instance.IsFullscreen;
+            PlayerPrefs.SetInt(UNLOCKED_LEVEL_KEY, completedLevelIndex + 1);
+            PlayerPrefs.Save();
         }
     }
 
-    #region Navigation Methods
-
-    public void PlayGame()
+    public void RefreshLevelButtons()
     {
-        Time.timeScale = 1.0f;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        int unlockedLevel = GetUnlockedLevelIndex();
 
-        try
+        for (int i = 0; i < levelButtons.Count; i++)
         {
-            if (loadByBuildIndex)
+            Button btn = levelButtons[i];
+            if (btn == null) continue;
+
+            int levelNum = i + 1; // Level 1, 2, 3...
+            bool isUnlocked = levelNum <= unlockedLevel;
+
+            btn.interactable = isUnlocked;
+
+            Text btnText = btn.GetComponentInChildren<Text>();
+            if (btnText != null)
             {
-                if (firstLevelBuildIndex < SceneManager.sceneCountInBuildSettings)
+                if (!isUnlocked)
                 {
-                    SceneManager.LoadScene(firstLevelBuildIndex);
-                }
-                else if (SceneManager.sceneCountInBuildSettings > 1)
-                {
-                    SceneManager.LoadScene(1);
-                }
-            }
-            else
-            {
-                if (Application.CanStreamedLevelBeLoaded(firstLevelName))
-                {
-                    SceneManager.LoadScene(firstLevelName);
-                }
-                else if (SceneManager.sceneCountInBuildSettings > 1)
-                {
-                    SceneManager.LoadScene(1);
+                    btnText.color = new Color(0.6f, 0.6f, 0.6f, 0.5f);
                 }
                 else
                 {
-                    SceneManager.LoadScene(firstLevelName);
+                    btnText.color = Color.white;
                 }
-            }
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogWarning($"[MainMenuManager] Failed to load level by name '{firstLevelName}': {ex.Message}. Falling back to build index 1.");
-            if (SceneManager.sceneCountInBuildSettings > 1)
-            {
-                SceneManager.LoadScene(1);
             }
         }
     }
 
     public void ShowMainPanel()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
         if (mainPanel != null) mainPanel.SetActive(true);
+        if (levelSelectPanel != null) levelSelectPanel.SetActive(false);
         if (controlsPanel != null) controlsPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(false);
+    }
+
+    public void PlayGame()
+    {
+        OpenLevelSelect();
+    }
+
+    public void StartFirstLevel()
+    {
+        LoadLevel("1Mercury");
+    }
+
+    public void OpenLevelSelect()
+    {
+        if (mainPanel != null) mainPanel.SetActive(false);
+        if (levelSelectPanel != null) levelSelectPanel.SetActive(true);
+        if (controlsPanel != null) controlsPanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+
+        RefreshLevelButtons();
     }
 
     public void OpenControls()
     {
         if (mainPanel != null) mainPanel.SetActive(false);
+        if (levelSelectPanel != null) levelSelectPanel.SetActive(false);
         if (controlsPanel != null) controlsPanel.SetActive(true);
         if (optionsPanel != null) optionsPanel.SetActive(false);
-    }
-
-    public void CloseControls()
-    {
-        ShowMainPanel();
     }
 
     public void OpenOptions()
     {
         if (mainPanel != null) mainPanel.SetActive(false);
+        if (levelSelectPanel != null) levelSelectPanel.SetActive(false);
         if (controlsPanel != null) controlsPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(true);
 
-        ShowSoundSettingsTab(); // Default to sound tab in options
+        InitOptionsSliders();
     }
 
-    public void CloseOptions()
+    private void InitOptionsSliders()
     {
-        ShowMainPanel();
+        SettingsManager settings = SettingsManager.EnsureInstance();
+        if (settings == null) return;
+
+        if (masterVolumeSlider != null)
+        {
+            masterVolumeSlider.value = settings.MasterVolume;
+            masterVolumeSlider.onValueChanged.RemoveAllListeners();
+            masterVolumeSlider.onValueChanged.AddListener(OnMasterVolumeChanged);
+        }
+
+        if (musicVolumeSlider != null)
+        {
+            musicVolumeSlider.value = settings.MusicVolume;
+            musicVolumeSlider.onValueChanged.RemoveAllListeners();
+            musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
+        }
+
+        if (sfxVolumeSlider != null)
+        {
+            sfxVolumeSlider.value = settings.SFXVolume;
+            sfxVolumeSlider.onValueChanged.RemoveAllListeners();
+            sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
+        }
     }
 
-    public void ShowSoundSettingsTab()
+    public void OnMasterVolumeChanged(float val)
     {
-        if (soundSettingsSubPanel != null) soundSettingsSubPanel.SetActive(true);
-        if (graphicsSettingsSubPanel != null) graphicsSettingsSubPanel.SetActive(false);
+        if (SettingsManager.Instance != null) SettingsManager.Instance.SetMasterVolume(val);
     }
 
-    public void ShowGraphicsSettingsTab()
+    public void OnMusicVolumeChanged(float val)
     {
-        if (soundSettingsSubPanel != null) soundSettingsSubPanel.SetActive(false);
-        if (graphicsSettingsSubPanel != null) graphicsSettingsSubPanel.SetActive(true);
+        if (SettingsManager.Instance != null) SettingsManager.Instance.SetMusicVolume(val);
+    }
+
+    public void OnSFXVolumeChanged(float val)
+    {
+        if (SettingsManager.Instance != null) SettingsManager.Instance.SetSFXVolume(val);
+    }
+
+    public void LoadLevel1Mercury() => LoadLevel("1Mercury");
+    public void LoadLevel2Venus() => LoadLevel("2Venus");
+    public void LoadLevel3Mars() => LoadLevel("3Mars");
+    public void LoadLevel4Jupiter() => LoadLevel("4jupiter");
+    public void LoadLevel5Neptune() => LoadLevel("5Neptune");
+
+    public void LoadLevel(string sceneName)
+    {
+        if (!string.IsNullOrEmpty(sceneName))
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(sceneName);
+        }
+    }
+
+    public void ResetProgress()
+    {
+        PlayerPrefs.DeleteKey(UNLOCKED_LEVEL_KEY);
+        PlayerPrefs.Save();
+        RefreshLevelButtons();
     }
 
     public void QuitGame()
     {
-        Debug.Log("Exiting Space Rocket Boost...");
+        Debug.Log("Exiting Rocket Boost...");
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
         Application.Quit();
+#endif
     }
-
-    #endregion
-
-    #region Sound Settings Callbacks
-
-    public void SetMasterVolume(float volume)
-    {
-        if (SettingsManager.Instance != null)
-        {
-            SettingsManager.Instance.SetMasterVolume(volume);
-        }
-        else
-        {
-            AudioListener.volume = volume;
-        }
-    }
-
-    public void SetMusicVolume(float volume)
-    {
-        if (SettingsManager.Instance != null)
-        {
-            SettingsManager.Instance.SetMusicVolume(volume);
-        }
-    }
-
-    public void SetSFXVolume(float volume)
-    {
-        if (SettingsManager.Instance != null)
-        {
-            SettingsManager.Instance.SetSFXVolume(volume);
-        }
-    }
-
-    #endregion
-
-    #region Graphics Settings Callbacks
-
-    public void SetQualityLevel(int index)
-    {
-        if (SettingsManager.Instance != null)
-        {
-            SettingsManager.Instance.SetQualityLevel(index);
-        }
-        else
-        {
-            QualitySettings.SetQualityLevel(index, true);
-        }
-    }
-
-    public void SetFullscreen(bool isFullscreen)
-    {
-        if (SettingsManager.Instance != null)
-        {
-            SettingsManager.Instance.SetFullscreen(isFullscreen);
-        }
-        else
-        {
-            Screen.fullScreen = isFullscreen;
-        }
-    }
-
-    #endregion
 }
