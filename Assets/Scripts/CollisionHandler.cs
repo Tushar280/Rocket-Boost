@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 public class CollisionHandler : MonoBehaviour
 {
-    [SerializeField]private AudioSource audioSource;
+    [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip explosionSound;
     [SerializeField] private AudioClip landingSound;
 
@@ -19,14 +19,16 @@ public class CollisionHandler : MonoBehaviour
     private void Start()
     {
         LevelHUDManager.EnsureInstance();
+        SettingsManager.EnsureInstance();
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(isCrashed || isFinished)
+        if (isCrashed || isFinished)
         {
             return;
         }
+
         switch (collision.gameObject.tag)
         {
             case "Friendly":
@@ -46,45 +48,65 @@ public class CollisionHandler : MonoBehaviour
         }
     }
 
-    // Update logic moved to PauseMenuManager for in-game pause menu control
-
-
     private void ReloadScene()
     {
-        int currentIndex = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(currentIndex);
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(currentSceneIndex);
     }
 
     private void LoadNextLevel()
     {
-        int currentIndex = SceneManager.GetActiveScene().buildIndex;
-        int nextIndex = currentIndex + 1;
-        if(currentIndex == SceneManager.sceneCountInBuildSettings - 1)
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int nextSceneIndex = currentSceneIndex + 1;
+        if (nextSceneIndex == SceneManager.sceneCountInBuildSettings)
         {
-            nextIndex = 0;
+            nextSceneIndex = 0;
         }
 
-        SceneManager.LoadScene(nextIndex);
+        SceneManager.LoadScene(nextSceneIndex);
     }
 
     private void GameOver()
     {
-        audioSource.Stop();
+        float sfxVol = SettingsManager.Instance != null ? SettingsManager.Instance.SFXVolume : 0.8f;
+
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+            audioSource.volume = sfxVol;
+            if (explosionSound != null)
+            {
+                audioSource.PlayOneShot(explosionSound, sfxVol);
+            }
+        }
+
         isCrashed = true;
-        vfxCrash.Play();
-        audioSource.PlayOneShot(explosionSound);
-        Invoke("ReloadScene",delay);
-        GetComponent<Movement>().enabled = false;
-        
+        if (vfxCrash != null) vfxCrash.Play();
+        Invoke("ReloadScene", delay);
+
+        Movement mv = GetComponent<Movement>();
+        if (mv != null) mv.enabled = false;
     }
 
     private void GameWin()
     {
-        audioSource.Stop();
-        vfxLanding.Play();
+        float sfxVol = SettingsManager.Instance != null ? SettingsManager.Instance.SFXVolume : 0.8f;
+
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+            audioSource.volume = sfxVol;
+            if (landingSound != null)
+            {
+                audioSource.PlayOneShot(landingSound, sfxVol);
+            }
+        }
+
+        if (vfxLanding != null) vfxLanding.Play();
         isFinished = true;
-        audioSource.PlayOneShot(landingSound);
-        GetComponent<Movement>().enabled = false;
+
+        Movement mv = GetComponent<Movement>();
+        if (mv != null) mv.enabled = false;
 
         LevelHUDManager hud = LevelHUDManager.EnsureInstance();
         if (hud != null)

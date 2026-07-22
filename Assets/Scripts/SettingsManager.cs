@@ -21,6 +21,23 @@ public class SettingsManager : MonoBehaviour
     public int QualityLevel { get; private set; } = 2; // Default High
     public bool IsFullscreen { get; private set; } = true;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    public static SettingsManager EnsureInstance()
+    {
+        if (Instance != null) return Instance;
+
+        SettingsManager existing = FindObjectOfType<SettingsManager>();
+        if (existing != null)
+        {
+            Instance = existing;
+            return Instance;
+        }
+
+        GameObject obj = new GameObject("SettingsManager");
+        Instance = obj.AddComponent<SettingsManager>();
+        return Instance;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

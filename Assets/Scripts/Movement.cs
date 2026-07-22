@@ -19,6 +19,7 @@ public class Movement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
+        SettingsManager.EnsureInstance();
     }
 
     private void OnEnable()
@@ -27,9 +28,9 @@ public class Movement : MonoBehaviour
         rotation.Enable();
     }
 
-    private void FixedUpdate(){
+    private void FixedUpdate()
+    {
         ProcessThrust();
-        
     }
 
     private void Update()
@@ -40,36 +41,43 @@ public class Movement : MonoBehaviour
     private void ProcessRotation()
     {
         float rotationValue = rotation.ReadValue<float>();
-        if (rotationValue != 0)
+        if (rotationValue != 0 && rb != null)
         {
             rb.freezeRotation = true;
             transform.Rotate(rotationValue * Vector3.forward * rotationPower * Time.deltaTime);
             rb.freezeRotation = false;
         }
-    
     }
 
     private void ProcessThrust()
     {
-        if(thrust.IsPressed())
+        if (thrust.IsPressed())
         {
-            
-            if(!audioSource.isPlaying)
+            float sfxVol = SettingsManager.Instance != null ? SettingsManager.Instance.SFXVolume : 0.8f;
+
+            if (audioSource != null)
             {
-                audioSource.PlayOneShot(thrustSound);
+                audioSource.volume = sfxVol;
+                if (!audioSource.isPlaying)
+                {
+                    audioSource.Play();
+                }
             }
-            if(!vfxLaunch.isPlaying)
+
+            if (vfxLaunch != null && !vfxLaunch.isPlaying)
             {
                 vfxLaunch.Play();
             }
-            rb.AddRelativeForce(Vector3.up* thrustPower * Time.deltaTime);
+
+            if (rb != null)
+            {
+                rb.AddRelativeForce(Vector3.up * thrustPower * Time.deltaTime);
+            }
         }
         else
         {
-            vfxLaunch.Stop();
-            audioSource.Stop();
+            if (vfxLaunch != null) vfxLaunch.Stop();
+            if (audioSource != null && audioSource.isPlaying) audioSource.Stop();
         }
     }
-
-    
 }
