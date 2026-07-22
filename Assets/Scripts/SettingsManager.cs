@@ -22,6 +22,7 @@ public class SettingsManager : MonoBehaviour
         }
 
         _instance = this;
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
         LoadSettings();
     }
