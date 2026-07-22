@@ -1,151 +1,79 @@
 using UnityEngine;
-using UnityEngine.Audio;
 
 public class SettingsManager : MonoBehaviour
 {
-    public static SettingsManager Instance { get; private set; }
-
-    [Header("Audio Mixer (Optional)")]
-    [SerializeField] private AudioMixer mainAudioMixer;
-
-    // Keys for PlayerPrefs
-    private const string MASTER_VOL_KEY = "MasterVolume";
-    private const string MUSIC_VOL_KEY = "MusicVolume";
-    private const string SFX_VOL_KEY = "SFXVolume";
-    private const string QUALITY_KEY = "GraphicsQuality";
-    private const string FULLSCREEN_KEY = "IsFullscreen";
+    private static SettingsManager _instance;
+    public static SettingsManager Instance => _instance;
 
     public float MasterVolume { get; private set; } = 1.0f;
     public float MusicVolume { get; private set; } = 0.8f;
     public float SFXVolume { get; private set; } = 0.8f;
-    public int QualityLevel { get; private set; } = 2; // Default High
-    public bool IsFullscreen { get; private set; } = true;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    public static SettingsManager EnsureInstance()
-    {
-        if (Instance != null) return Instance;
-
-        SettingsManager existing = FindObjectOfType<SettingsManager>();
-        if (existing != null)
-        {
-            Instance = existing;
-            return Instance;
-        }
-
-        GameObject obj = new GameObject("SettingsManager");
-        Instance = obj.AddComponent<SettingsManager>();
-        return Instance;
-    }
+    private const string MASTER_KEY = "MasterVolume";
+    private const string MUSIC_KEY = "MusicVolume";
+    private const string SFX_KEY = "SFXVolume";
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        Instance = this;
+        _instance = this;
         DontDestroyOnLoad(gameObject);
-
         LoadSettings();
+    }
+
+    public static SettingsManager EnsureInstance()
+    {
+        if (_instance == null)
+        {
+            _instance = FindAnyObjectByType<SettingsManager>();
+            if (_instance == null)
+            {
+                GameObject obj = new GameObject("SettingsManager");
+                _instance = obj.AddComponent<SettingsManager>();
+            }
+        }
+        return _instance;
     }
 
     public void LoadSettings()
     {
-        MasterVolume = PlayerPrefs.GetFloat(MASTER_VOL_KEY, 1.0f);
-        MusicVolume = PlayerPrefs.GetFloat(MUSIC_VOL_KEY, 0.8f);
-        SFXVolume = PlayerPrefs.GetFloat(SFX_VOL_KEY, 0.8f);
-        QualityLevel = PlayerPrefs.GetInt(QUALITY_KEY, QualitySettings.names.Length > 0 ? QualitySettings.names.Length - 1 : 2);
-        IsFullscreen = PlayerPrefs.GetInt(FULLSCREEN_KEY, Screen.fullScreen ? 1 : 0) == 1;
-
-        ApplySettings();
+        MasterVolume = PlayerPrefs.GetFloat(MASTER_KEY, 1.0f);
+        MusicVolume = PlayerPrefs.GetFloat(MUSIC_KEY, 0.8f);
+        SFXVolume = PlayerPrefs.GetFloat(SFX_KEY, 0.8f);
+        ApplyAudioSettings();
     }
 
-    public void ApplySettings()
+    public void SetMasterVolume(float val)
     {
-        // Apply Global Audio Listener Volume
+        MasterVolume = Mathf.Clamp01(val);
+        PlayerPrefs.SetFloat(MASTER_KEY, MasterVolume);
+        PlayerPrefs.Save();
+        ApplyAudioSettings();
+    }
+
+    public void SetMusicVolume(float val)
+    {
+        MusicVolume = Mathf.Clamp01(val);
+        PlayerPrefs.SetFloat(MUSIC_KEY, MusicVolume);
+        PlayerPrefs.Save();
+        ApplyAudioSettings();
+    }
+
+    public void SetSFXVolume(float val)
+    {
+        SFXVolume = Mathf.Clamp01(val);
+        PlayerPrefs.SetFloat(SFX_KEY, SFXVolume);
+        PlayerPrefs.Save();
+        ApplyAudioSettings();
+    }
+
+    private void ApplyAudioSettings()
+    {
         AudioListener.volume = MasterVolume;
-
-        // If using AudioMixer
-        if (mainAudioMixer != null)
-        {
-            mainAudioMixer.SetFloat("MasterVol", ConvertToDecibels(MasterVolume));
-            mainAudioMixer.SetFloat("MusicVol", ConvertToDecibels(MusicVolume));
-            mainAudioMixer.SetFloat("SFXVol", ConvertToDecibels(SFXVolume));
-        }
-
-        // Apply Quality Settings
-        if (QualityLevel >= 0 && QualityLevel < QualitySettings.names.Length)
-        {
-            QualitySettings.SetQualityLevel(QualityLevel, true);
-        }
-
-        // Apply Fullscreen
-        Screen.fullScreen = IsFullscreen;
-    }
-
-    public void SetMasterVolume(float volume)
-    {
-        MasterVolume = Mathf.Clamp01(volume);
-        PlayerPrefs.SetFloat(MASTER_VOL_KEY, MasterVolume);
-        AudioListener.volume = MasterVolume;
-
-        if (mainAudioMixer != null)
-        {
-            mainAudioMixer.SetFloat("MasterVol", ConvertToDecibels(MasterVolume));
-        }
-        PlayerPrefs.Save();
-    }
-
-    public void SetMusicVolume(float volume)
-    {
-        MusicVolume = Mathf.Clamp01(volume);
-        PlayerPrefs.SetFloat(MUSIC_VOL_KEY, MusicVolume);
-
-        if (mainAudioMixer != null)
-        {
-            mainAudioMixer.SetFloat("MusicVol", ConvertToDecibels(MusicVolume));
-        }
-        PlayerPrefs.Save();
-    }
-
-    public void SetSFXVolume(float volume)
-    {
-        SFXVolume = Mathf.Clamp01(volume);
-        PlayerPrefs.SetFloat(SFX_VOL_KEY, SFXVolume);
-
-        if (mainAudioMixer != null)
-        {
-            mainAudioMixer.SetFloat("SFXVol", ConvertToDecibels(SFXVolume));
-        }
-        PlayerPrefs.Save();
-    }
-
-    public void SetQualityLevel(int index)
-    {
-        QualityLevel = index;
-        PlayerPrefs.SetInt(QUALITY_KEY, QualityLevel);
-        QualitySettings.SetQualityLevel(QualityLevel, true);
-        PlayerPrefs.Save();
-    }
-
-    public void SetFullscreen(bool isFullscreen)
-    {
-        IsFullscreen = isFullscreen;
-        PlayerPrefs.SetInt(FULLSCREEN_KEY, IsFullscreen ? 1 : 0);
-        Screen.fullScreen = IsFullscreen;
-        PlayerPrefs.Save();
-    }
-
-    public void SetResolution(int width, int height, bool fullscreen)
-    {
-        Screen.SetResolution(width, height, fullscreen);
-    }
-
-    private float ConvertToDecibels(float linearVolume)
-    {
-        return linearVolume > 0.0001f ? Mathf.Log10(linearVolume) * 20f : -80f;
     }
 }
