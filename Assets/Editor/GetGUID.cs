@@ -1,1 +1,0 @@
-using UnityEditor; using UnityEngine; public class GetGUID { [InitializeOnLoadMethod] static void PrintGUID() { System.IO.File.WriteAllText("guid_output.txt", AssetDatabase.AssetPathToGUID("Assets/Scripts/MainMenuManager.cs")); } }
