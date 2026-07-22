@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using System.Collections.Generic;
 
 public class MainMenuManager : MonoBehaviour
@@ -23,10 +25,22 @@ public class MainMenuManager : MonoBehaviour
 
     private void Start()
     {
+        Time.timeScale = 1f;
+        EnsureEventSystem();
         SettingsManager.EnsureInstance();
         ShowMainPanel();
         InitOptionsSliders();
         RefreshLevelButtons();
+    }
+
+    private void EnsureEventSystem()
+    {
+        if (FindAnyObjectByType<EventSystem>() == null)
+        {
+            GameObject esObj = new GameObject("EventSystem");
+            esObj.AddComponent<EventSystem>();
+            esObj.AddComponent<InputSystemUIInputModule>();
+        }
     }
 
     public static int GetUnlockedLevelIndex()

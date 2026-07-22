@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.InputSystem;
 
 public class CreateLevelHUDUI : EditorWindow
 {
@@ -70,22 +69,8 @@ public class CreateLevelHUDUI : EditorWindow
     private static void CreateEventSystem()
     {
         GameObject eventSysObj = new GameObject("EventSystem");
-        EventSystem eventSystem = eventSysObj.AddComponent<EventSystem>();
-        InputSystemUIInputModule inputModule = eventSysObj.AddComponent<InputSystemUIInputModule>();
-
-        InputActionAsset defaultActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>("Packages/com.unity.inputsystem/InputSystem/Plugins/PlayerInput/DefaultInputActions.inputactions");
-        if (defaultActions != null)
-        {
-            inputModule.actionsAsset = defaultActions;
-            inputModule.point = InputActionReference.Create(defaultActions.FindAction("UI/Point"));
-            inputModule.leftClick = InputActionReference.Create(defaultActions.FindAction("UI/Click"));
-            inputModule.middleClick = InputActionReference.Create(defaultActions.FindAction("UI/MiddleClick"));
-            inputModule.rightClick = InputActionReference.Create(defaultActions.FindAction("UI/RightClick"));
-            inputModule.scrollWheel = InputActionReference.Create(defaultActions.FindAction("UI/ScrollWheel"));
-            inputModule.move = InputActionReference.Create(defaultActions.FindAction("UI/Navigate"));
-            inputModule.submit = InputActionReference.Create(defaultActions.FindAction("UI/Submit"));
-            inputModule.cancel = InputActionReference.Create(defaultActions.FindAction("UI/Cancel"));
-        }
+        eventSysObj.AddComponent<EventSystem>();
+        eventSysObj.AddComponent<InputSystemUIInputModule>();
     }
 
     private static Canvas CreateCanvas()
@@ -129,6 +114,7 @@ public class CreateLevelHUDUI : EditorWindow
 
         Image pauseImg = pauseBtnObj.AddComponent<Image>();
         pauseImg.color = new Color(1f, 1f, 1f, 0.15f);
+        pauseImg.raycastTarget = true;
 
         Button pauseBtn = pauseBtnObj.AddComponent<Button>();
         ColorBlock colors = pauseBtn.colors;
@@ -137,7 +123,17 @@ public class CreateLevelHUDUI : EditorWindow
         colors.pressedColor = new Color(1f, 1f, 1f, 0.5f);
         pauseBtn.colors = colors;
 
-        CreateText("PauseText", "PAUSE", pauseBtnObj.transform, Vector2.zero, 20, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
+        GameObject pauseTxtObj = CreateUIElement("PauseText", pauseBtnObj.transform);
+        StretchToFill(pauseTxtObj.GetComponent<RectTransform>());
+        Text pauseTxt = pauseTxtObj.AddComponent<Text>();
+        pauseTxt.text = "PAUSE";
+        pauseTxt.fontSize = 20;
+        pauseTxt.fontStyle = FontStyle.Bold;
+        pauseTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        pauseTxt.alignment = TextAnchor.MiddleCenter;
+        pauseTxt.color = Color.white;
+        pauseTxt.raycastTarget = false;
+
         UnityEventTools.AddPersistentListener(pauseBtn.onClick, manager.PauseGame);
 
         // 2. Pause Panel Overlay
@@ -182,6 +178,7 @@ public class CreateLevelHUDUI : EditorWindow
 
         Image img = panelObj.AddComponent<Image>();
         img.color = new Color(0.04f, 0.04f, 0.08f, 0.92f);
+        img.raycastTarget = false;
 
         CreateText("Title", titleText, panelObj.transform, new Vector2(0, 180), 38, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
         CreateText("Subtitle", subtitleText, panelObj.transform, new Vector2(0, 135), 18, FontStyle.Normal, new Color(0.85f, 0.85f, 0.95f, 0.9f), TextAnchor.MiddleCenter);
@@ -198,6 +195,7 @@ public class CreateLevelHUDUI : EditorWindow
 
         Image img = btnObj.AddComponent<Image>();
         img.color = isHighlight ? new Color(1f, 1f, 1f, 0.25f) : new Color(1f, 1f, 1f, 0.08f);
+        img.raycastTarget = true;
 
         Button btn = btnObj.AddComponent<Button>();
         ColorBlock colors = btn.colors;
@@ -207,7 +205,17 @@ public class CreateLevelHUDUI : EditorWindow
         colors.selectedColor = colors.highlightedColor;
         btn.colors = colors;
 
-        CreateText(name + "_Text", text, btnObj.transform, Vector2.zero, 22, FontStyle.Normal, Color.white, TextAnchor.MiddleCenter);
+        GameObject txtObj = CreateUIElement(name + "_Text", btnObj.transform);
+        StretchToFill(txtObj.GetComponent<RectTransform>());
+
+        Text txt = txtObj.AddComponent<Text>();
+        txt.text = text;
+        txt.fontSize = 22;
+        txt.fontStyle = FontStyle.Normal;
+        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.alignment = TextAnchor.MiddleCenter;
+        txt.color = Color.white;
+        txt.raycastTarget = false;
 
         return btn;
     }
@@ -225,6 +233,7 @@ public class CreateLevelHUDUI : EditorWindow
         txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         txt.alignment = alignment;
         txt.color = color;
+        txt.raycastTarget = false;
     }
 
     private static GameObject CreateUIElement(string name, Transform parent)
@@ -233,6 +242,14 @@ public class CreateLevelHUDUI : EditorWindow
         obj.transform.SetParent(parent, false);
         obj.AddComponent<RectTransform>();
         return obj;
+    }
+
+    private static void StretchToFill(RectTransform rt)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
     }
 }
 #endif

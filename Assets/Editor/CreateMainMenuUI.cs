@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.InputSystem;
 
 public class CreateMainMenuUI : EditorWindow
 {
@@ -121,15 +120,6 @@ public class CreateMainMenuUI : EditorWindow
                 }
             }
 
-            if (sprite != null)
-            {
-                Debug.Log("Successfully loaded background Sprite for Main Menu!");
-            }
-            else
-            {
-                Debug.LogError("Could not load background Sprite from: " + destPath);
-            }
-
             return sprite;
         }
         catch (System.Exception ex)
@@ -142,22 +132,8 @@ public class CreateMainMenuUI : EditorWindow
     private static void CreateEventSystem()
     {
         GameObject eventSysObj = new GameObject("EventSystem");
-        EventSystem eventSystem = eventSysObj.AddComponent<EventSystem>();
-        InputSystemUIInputModule inputModule = eventSysObj.AddComponent<InputSystemUIInputModule>();
-
-        InputActionAsset defaultActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>("Packages/com.unity.inputsystem/InputSystem/Plugins/PlayerInput/DefaultInputActions.inputactions");
-        if (defaultActions != null)
-        {
-            inputModule.actionsAsset = defaultActions;
-            inputModule.point = InputActionReference.Create(defaultActions.FindAction("UI/Point"));
-            inputModule.leftClick = InputActionReference.Create(defaultActions.FindAction("UI/Click"));
-            inputModule.middleClick = InputActionReference.Create(defaultActions.FindAction("UI/MiddleClick"));
-            inputModule.rightClick = InputActionReference.Create(defaultActions.FindAction("UI/RightClick"));
-            inputModule.scrollWheel = InputActionReference.Create(defaultActions.FindAction("UI/ScrollWheel"));
-            inputModule.move = InputActionReference.Create(defaultActions.FindAction("UI/Navigate"));
-            inputModule.submit = InputActionReference.Create(defaultActions.FindAction("UI/Submit"));
-            inputModule.cancel = InputActionReference.Create(defaultActions.FindAction("UI/Cancel"));
-        }
+        eventSysObj.AddComponent<EventSystem>();
+        eventSysObj.AddComponent<InputSystemUIInputModule>();
     }
 
     private static Canvas CreateCanvas()
@@ -192,6 +168,7 @@ public class CreateMainMenuUI : EditorWindow
         {
             bgImg.color = new Color(0.05f, 0.05f, 0.12f, 1f);
         }
+        bgImg.raycastTarget = false;
         StretchToFill(bgObj.GetComponent<RectTransform>());
 
         // 2. Main Container Panel (Reference image centered box)
@@ -202,6 +179,7 @@ public class CreateMainMenuUI : EditorWindow
 
         Image panelImg = mainPanel.AddComponent<Image>();
         panelImg.color = new Color(0.04f, 0.04f, 0.08f, 0.72f);
+        panelImg.raycastTarget = false;
 
         // Header: ROCKET BOOST
         CreateText("Title", "ROCKET BOOST", mainPanel.transform, new Vector2(0, 220), 48, FontStyle.Bold, Color.white);
@@ -238,6 +216,7 @@ public class CreateMainMenuUI : EditorWindow
         rt.sizeDelta = new Vector2(650, 600);
         Image img = panelObj.AddComponent<Image>();
         img.color = new Color(0.04f, 0.04f, 0.08f, 0.9f);
+        img.raycastTarget = false;
 
         CreateText("LevelTitle", "SELECT MISSION", panelObj.transform, new Vector2(0, 210), 38, FontStyle.Bold, Color.white);
 
@@ -288,6 +267,7 @@ public class CreateMainMenuUI : EditorWindow
         rt.sizeDelta = new Vector2(550, 600);
         Image img = panelObj.AddComponent<Image>();
         img.color = new Color(0.04f, 0.04f, 0.08f, 0.9f);
+        img.raycastTarget = false;
 
         CreateText("ControlsTitle", "CONTROLS", panelObj.transform, new Vector2(0, 210), 38, FontStyle.Bold, Color.white);
 
@@ -313,6 +293,7 @@ public class CreateMainMenuUI : EditorWindow
         rt.sizeDelta = new Vector2(550, 600);
         Image img = panelObj.AddComponent<Image>();
         img.color = new Color(0.04f, 0.04f, 0.08f, 0.9f);
+        img.raycastTarget = false;
 
         CreateText("OptionsTitle", "OPTIONS", panelObj.transform, new Vector2(0, 210), 38, FontStyle.Bold, Color.white);
 
@@ -339,6 +320,7 @@ public class CreateMainMenuUI : EditorWindow
 
         Image img = btnObj.AddComponent<Image>();
         img.color = isHighlight ? new Color(1f, 1f, 1f, 0.25f) : new Color(1f, 1f, 1f, 0.08f);
+        img.raycastTarget = true;
 
         Button btn = btnObj.AddComponent<Button>();
         ColorBlock colors = btn.colors;
@@ -348,7 +330,17 @@ public class CreateMainMenuUI : EditorWindow
         colors.selectedColor = colors.highlightedColor;
         btn.colors = colors;
 
-        CreateText(name + "_Text", text, btnObj.transform, Vector2.zero, 22, FontStyle.Normal, Color.white);
+        GameObject txtObj = CreateUIElement(name + "_Text", btnObj.transform);
+        StretchToFill(txtObj.GetComponent<RectTransform>());
+
+        Text txt = txtObj.AddComponent<Text>();
+        txt.text = text;
+        txt.fontSize = 22;
+        txt.fontStyle = FontStyle.Normal;
+        txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.alignment = TextAnchor.MiddleCenter;
+        txt.color = Color.white;
+        txt.raycastTarget = false;
 
         return btn;
     }
@@ -407,6 +399,7 @@ public class CreateMainMenuUI : EditorWindow
         txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         txt.alignment = TextAnchor.MiddleCenter;
         txt.color = color;
+        txt.raycastTarget = false;
     }
 
     private static GameObject CreateUIElement(string name, Transform parent)
